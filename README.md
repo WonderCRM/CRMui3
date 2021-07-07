@@ -23,7 +23,7 @@
 ## Использование
 Описание методов и их использование есть в примере, идущем вместе с библиотекой.
 Как устанавливать библиотеки, работать с Arduino IDE и загружать прошивку в ESP можно посмотреть тут:
-* [**ESP8266 прошивка**](https://wiki.iarduino.ru/page/WEMOS_start/)
+* [**Установка ESP8266 в Arduino IDE (руководство для ОС Windows)**](https://wiki.iarduino.ru/page/WEMOS_start/)
 * Раздел [**Введение в Arduino**](https://alexgyver.ru/lessons/)
 * Так же есть видео с примерами: [**Заметки Ардуинщика**](https://www.youtube.com/c/ЗаметкиАрдуинщика/videos)
 
