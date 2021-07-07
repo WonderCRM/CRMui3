@@ -397,7 +397,7 @@ void CRMui3::http() {
 void CRMui3::uiJsonSend() {
   _buf = String(F("{\"_t\":0,\"an\":\"")) + _app_name + F("\",\"id\":\"") + _id + F("\",\"fw\":\"") +
          CRM_VER + F("\",\"a\":") + String(_AuthenticateStatus);
-  if (_licKey != "") _buf += String(F(",\"lic\":\"")) + _licKey + F("\"");
+  _buf += String(F(",\"lic\":\"")) + _licKey + F("\"");
   if (_eMail != "") _buf += String(F(",\"em\":\"")) + _eMail + F("\"");
   if (_telega != "") _buf += String(F(",\"tg\":\"")) + _telega + F("\"");
   if (_homePage != "") _buf += String(F(",\"hp\":\"")) + _homePage + F("\"");
