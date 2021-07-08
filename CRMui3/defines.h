@@ -1,7 +1,6 @@
 #define CRM_VER F("2021.07.08a")
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
-#define UDP_PORT 4243
 
 #define INPUT_BUTTON 0
 #define INPUT_CHECKBOX 1
@@ -45,6 +44,7 @@
   Serial.print(" | "); \
   Serial.print(__LINE__); \
   Serial.print(" | "); \
-  Serial.println(__PRETTY_FUNCTION__); \
+  Serial.println(ESP.getFreeHeap()); \
   Serial.flush();
-  
+
+  //Serial.println(__PRETTY_FUNCTION__); \
