@@ -1,6 +1,5 @@
-#define CRM_VER F("2021.07.06a")
+#define CRM_VER F("2021.07.08a")
 
-#define CONFIG_BUTTON_PIN 0
 #define AUTO_SAVE_TIME_INTERVAL 30000
 #define UDP_PORT 4243
 
