@@ -81,7 +81,6 @@ class CRMui3 {
     typedef void (*apiCallback) (String);
 
   public:
-    void test(uint32_t s);
     void begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)() = NULL,
                void (*apiFunction)(String) = NULL, uint32_t baud = 0);
     void run();
@@ -148,7 +147,6 @@ class CRMui3 {
     String _apiKey = String();
     bool _AuthenticateStatus = false;
     void http();
-    void uiJsonSend();
     String respString(const String &m, int t = -1);
     String _apiResponse;
     String _licKey = String();
