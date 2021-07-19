@@ -213,6 +213,7 @@ void interface() {
   crm.output({OUTPUT_HR, "1px", "-3px 10% 0"});
 
   // График
+  // Тип: CHART_L - линии, CHART_B - бары (столбики)
   //crm.chart({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], ["высота графика"]});
   crm.chart({CHART_L, "rssi", "WiFi RSSI", "[1,2,3,4,5,6]",  "[1,5,3,2,6,3]", "#00dd00", "250"});
 
@@ -221,9 +222,12 @@ void interface() {
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["цвет в HEX формате"], [Новая группа]});
   // Значок указывается из списка icon.pdf, в формате &#[CODE];  без 0
   crm.card({CARD_CHECKBOX, "card1", "Motor", "false", "&#xf2c5;", "aaa"});
-  // График столбцы
+  
+  // Плитки с нрафиком
+  // Тип: CARD_CHART_L - линии, CARD_CHART_B - бары (столбики)
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], [Новая группа]]});
   crm.card({CARD_CHART_B, "rssiraw", "WiFi RSSI RAW", "",  "", "#dddd00"});
+  
   // Кнопка
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["Цвет"], [Новая группа]});
   crm.card({CARD_BUTTON, "card3", "Door 3", (st3 ? "Open" : "Close"), "&#xe802;", "0ab", true});
@@ -277,12 +281,14 @@ void interface() {
 
   // Ползунок
   // crm.range({["ID"], ["Заголовок"], ["Значение по умолчанию"], ["MIN"], ["MAX"], [Шаг], ["Единицы измерения"]});
-  crm.range({"range1", "Volume", 12, 0, 84, 1});
-  crm.range({"range2", "Brightness", 52, 0, 84, 1, " lux"});
+  crm.range({"range1", "Volume", 12, 0, 84, 1});						//Без единиц измерения
+  crm.range({"range2", "Brightness", 52, 0, 84, 1, " lux"});	//С единицами измерения
   if (crm.var("chk1") == "true") crm.input({INPUT_BUTTON, "reboot", "&#xe810;", "8px 9px 8px 14px", "row", "50"});
 
   crm.page("Wi-Fi");
   // форма с полями для WiFi
+  // crm.wifiForm([Режим работы], ["Название ТД"], ["Пароль ТД"], ["WiFi сеть для подключения", ["Пароль сети"], ["Время ожидания подключения"]]);
+  // Режим работы: WIFI_AP - точка доступа, WIFI_STA - клиент, WIFI_AP_STA - ТД + Клиент
   crm.wifiForm(WIFI_AP, "MY-AP");
   crm.input({INPUT_BUTTON, "reboot", "REBOOT"});
 }
