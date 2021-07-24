@@ -106,7 +106,7 @@ class CRMui3 {
     void btnCallback(int, buttonCallback response, uint8_t lvl = LOW);
     void wifiForm(uint8_t, const String &ap_ssid = "", const String &ap_pass = "",
                   const String &ssid = "", const String &pass = "", long wtc = 120);
-    void webUpdate(const String &name, const String &value, bool n = false);
+    void webUpdate(const String &name = "", const String &value = "", bool n = false);
     void webNotif(const String &type, const String &text, long tout = 5, bool x = true);
     void apiResponse(const String &p, const String &v);
 
@@ -120,7 +120,6 @@ class CRMui3 {
     void var(const String &name, char, bool save = true);
 
   private:
-    String test_s = "";
     uiCallback ui;
     updateCallback upd;
     apiCallback api;
