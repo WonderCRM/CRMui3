@@ -31,8 +31,9 @@
 #define OUTPUT_TEXT 30
 #define OUTPUT_TABL 31
 #define OUTPUT_HR 32
-#define CHART_L 33
-#define CHART_B 34
+
+#define CHART_L 43
+#define CHART_B 44
 
 #define DBG if (_debug) Serial.print
 #define DBGLN if (_debug) Serial.println
