@@ -454,14 +454,17 @@ void CRMui3::apiResponse(const String &p, const String &v) {
 
 void CRMui3::webUpdate(const String &name, const String &value, bool n) {
   if (webConnCountStatus()) {
-    static String b = String();
-    if (!b.startsWith(F("{"))) b = F("{\"_t\":2,\"d\":[");
-    b += String(F("[\"")) + name + F("\",\"") + value + F("\"],");
-    if (n) {
-      b[b.length() - 1] = ']';
-      b += "}";
-      ws.textAll(b.c_str());
-      b = String();
+    if (name == "") ws.textAll(String("{\"_t\":0}").c_str());
+    else {
+      static String b = String();
+      if (!b.startsWith(F("{"))) b = F("{\"_t\":2,\"d\":[");
+      b += String(F("[\"")) + name + F("\",\"") + value + F("\"],");
+      if (n) {
+        b[b.length() - 1] = ']';
+        b += "}";
+        ws.textAll(b.c_str());
+        b = String();
+      }
     }
   }
 }
