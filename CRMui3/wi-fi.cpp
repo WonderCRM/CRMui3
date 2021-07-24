@@ -8,26 +8,26 @@ void CRMui3::wifiEvent() {
 #ifdef ESP32
   WiFi.onEvent([this](system_event_id_t event, system_event_info_t info) {
     const int r = info.disconnected.reason;
-    //Serial.println("[WiFi] Event: " + String(event) + ",  " + "Reason: " + String(r));
+    //Serial.println("[WiFi] Event: " + String(event) + ",  Reason: " + String(r));
+
     switch (event) {
       /*case 4: // STA_CONNECTED
         break;*/
 
       case 5: // STA_DISCONNECTED
-        //Serial.println("[WiFi: " + String(event) + "] " + "Disconnected from WiFi access point: " + String(r));
         if (r == 2 || r == 7 || r == 15) WiFi.reconnect();
-        else if ((_wifiMode == 1 || _wifiMode == 3) && !firstConnection &&
-                 millis() - _connectingTimer >= _waitTimeForConnection) {
+        else if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) &&
+						millis() - _connectingTimer >= _waitTimeForConnection) {
           WiFi.disconnect();
           SPLN(String() + F("[WiFi] Connecting to WiFi failed. Time is over. Code ") + String(r));
         }
         break;
 
       case 7: // STA_GOT_IP
-        firstConnection = true;
         SPLN(String() + F("[WiFi] Connecting to \"") + WiFi.SSID() + F("\" is done. ") +
              F("(IP: ") + WiFi.localIP().toString() + F(")"));
-        if (r != 200 && _wifiMode == 1) {
+        if (!firstConnection && r != 200 && _wifiMode == 1) {
+		  firstConnection = true;
           WiFi.mode(WIFI_STA);
           SPLN(F("[WiFi] AP mode disable."));
         }
