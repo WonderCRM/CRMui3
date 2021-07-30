@@ -111,7 +111,6 @@ void CRMui3::defaultWifi(uint8_t mode, const String &ap_ssid, const String &ap_p
 void CRMui3::http() {
   ws.onEvent([this](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_CONNECT) {
-      client->ping();
       _sendStatistic = true;
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Connect"));
     } else if (type == WS_EVT_DISCONNECT) {
@@ -119,9 +118,7 @@ void CRMui3::http() {
       if (ws.count() < 1) _sendStatistic = false;
     } else if (type == WS_EVT_ERROR) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Error"));
-    }/* else if (type == WS_EVT_PONG) {
-      Serial.printf("[WebSocket] ID %u. Pong %u: %s\n", client->id(), len, (len) ? (char*)data : "");
-    } else if (type == WS_EVT_DATA) {
+    }/* else if (type == WS_EVT_DATA) {
       AwsFrameInfo *info = (AwsFrameInfo*)arg;
       if (info->final && info->index == 0 && info->len == len) {
         if (info->opcode == WS_TEXT) { // если текстовые данные вебсокета
