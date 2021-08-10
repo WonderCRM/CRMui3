@@ -239,8 +239,8 @@ void interface() {
   String txt = F("<z>&#xf1c9;</z> In computer science, an array data structure, or simply an array, is a data structure consisting of a collection of elements (values or variables), each identified by at least one array index or key. An array is stored such that the position of each element can be computed from its index tuple by a mathematical formula.[1][2][3] The simplest type of data structure is a linear array, also called one-dimensional array.");
 
   // Текстовое поле справка
-  //crm.output({[Тип], ["ID"], "", ["ТЕКСТ"], ["цвет в HEX формате"]});
-  crm.output({OUTPUT_TEXT, "t1", "", txt, "#ff5"});
+  //crm.output({[Тип], ["ID"], "["Заголовок"]", ["Текст"], ["цвет в HEX формате"]});
+  crm.output({OUTPUT_TEXT, "t1", "Any label text", txt, "#ff5"});
 
   // Кнопки
   // crm.input({[Тип], ["ID"], ["Заголовок / значок"], ["Внутренние отступы, смотри: padding html"], ["r - вряд"], ["Размер"]});
