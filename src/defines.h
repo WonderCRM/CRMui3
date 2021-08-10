@@ -1,4 +1,4 @@
-#define CRM_VER F("2021.07.08a")
+#define CRM_VER F("2021.08.10a")  // r1.0.1
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
@@ -42,10 +42,10 @@
 
 #define TRACE() \
   Serial.print(__FILE__); \
-  Serial.print(" | "); \
+  Serial.print(F(" | ")); \
   Serial.print(__LINE__); \
-  Serial.print(" | "); \
+  Serial.print(F(" | ")); \
   Serial.println(ESP.getFreeHeap()); \
   Serial.flush();
 
-  //Serial.println(__PRETTY_FUNCTION__); \
+  /*Serial.println(__PRETTY_FUNCTION__); \  */
