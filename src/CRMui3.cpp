@@ -56,10 +56,10 @@ void CRMui3::run() {
     cfgAutoSave();
     if (_sendStatistic) {
       ws.cleanupClients();
-      webUpdate(F("uptime"), upTime());
-      webUpdate(F("wifi"), String(WiFi.RSSI()));
-      webUpdate(F("ram"), String(ESP.getFreeHeap()));
-      webUpdate(F("devip"), WiFi.getMode() == 2 ? WiFi.softAPIP().toString() : WiFi.localIP().toString(), true);
+      webUpdate("uptime", upTime());
+      webUpdate("wifi", String(WiFi.RSSI()));
+      webUpdate("ram", String(ESP.getFreeHeap()));
+      webUpdate("devip", WiFi.getMode() == 2 ? WiFi.softAPIP().toString() : WiFi.localIP().toString(), true);
     }
     if (_espNeedReboot) espReboot();
   }
@@ -75,14 +75,14 @@ String CRMui3::upTime() {
   }
   if ((_upTime / 86400 % 365) != 0) {
     b += _upTime / 86400 % 365;
-    b += F(",  ");
+    b += ",  ";
   }
   b += _upTime / 3600 % 24;
-  b += F(":");
-  if ((_upTime / 60 % 60) < 10) b += F("0");
+  b += ":";
+  if ((_upTime / 60 % 60) < 10) b += "0";
   b += _upTime / 60 % 60;
-  b += F(":");
-  if ((_upTime % 60) < 10) b += F("0");
+  b += ":";
+  if ((_upTime % 60) < 10) b += "0";
   b += _upTime % 60;
   return b;
 }
@@ -112,13 +112,16 @@ void CRMui3::http() {
   ws.onEvent([this](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_CONNECT) {
       _sendStatistic = true;
+      //client->ping();
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Connect"));
     } else if (type == WS_EVT_DISCONNECT) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Disconnect"));
       if (ws.count() < 1) _sendStatistic = false;
     } else if (type == WS_EVT_ERROR) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Error"));
-    }/* else if (type == WS_EVT_DATA) {
+    }/* else if (type == WS_EVT_PONG) {
+      Serial.printf("[WebSocket] ID %u. Pong %u: %s\n", client->id(), len, (len) ? (char*)data : "");
+    } else if (type == WS_EVT_DATA) {
       AwsFrameInfo *info = (AwsFrameInfo*)arg;
       if (info->final && info->index == 0 && info->len == len) {
         if (info->opcode == WS_TEXT) { // если текстовые данные вебсокета
@@ -202,16 +205,16 @@ void CRMui3::http() {
         }
       }
       uint32_t t = micros();
-      String s = F("{");
+      String s = "{";
       for (int i = 0; i < request->params(); i++) {
         AsyncWebParameter* p = request->getParam(i);
-        if (i) s += F(",");
-        s += "\"" + String(p->name()) + F("\":\"") + String(p->value()) + F("\"");
+        if (i) s += ",";
+        s += "\"" + String(p->name()) + "\":\"" + String(p->value()) + "\"";
       }
       s += "}";
-      _apiResponse = String() + F("{\"stateRequest\":\"OK\",\"leadTime_ms\":\"") + String(((float)(micros() - t) / 1000), 3) + F("\"}");
+      _apiResponse = "{\"stateRequest\":\"OK\",\"leadTime_ms\":\"" + String(((float)(micros() - t) / 1000), 3) + "\"}";
       api(s);
-      request->send(200, F("text/plain"), _apiResponse);
+      request->send(200, "text/plain", _apiResponse);
       _apiResponse = String();
     });
   }
@@ -454,8 +457,8 @@ void CRMui3::webUpdate(const String &name, const String &value, bool n) {
     if (name == "") ws.textAll(String("{\"_t\":0}").c_str());
     else {
       static String b = String();
-      if (!b.startsWith(F("{"))) b = F("{\"_t\":2,\"d\":[");
-      b += String(F("[\"")) + name + F("\",\"") + value + F("\"],");
+      if (!b.startsWith("{")) b = "{\"_t\":2,\"d\":[";
+      b += "[\"" + name + "\",\"" + value + "\"],";
       if (n) {
         b[b.length() - 1] = ']';
         b += "}";
