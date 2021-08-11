@@ -1,4 +1,4 @@
-#define CRM_VER F("2021.08.10a")  // r1.0.1
+#define CRM_VER F("2021.08.11a")  // r1.0.1
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
@@ -14,12 +14,12 @@
 #define INPUT_COLOR 10
 #define INPUT_DATE 11
 #define INPUT_DATETIME 12
-#define INPUT_EMAIL 13
+#define INPUT_TIME 13
 #define INPUT_NUMBER 14
 #define INPUT_RANGE 15
 //#define INPUT_SEARCH 16
 #define INPUT_SELECT 17
-#define INPUT_TIME 18
+#define INPUT_EMAIL 18
 #define INPUT_WIFI 19
 
 #define CARD_CHECKBOX 20
