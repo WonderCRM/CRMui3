@@ -223,7 +223,10 @@ void CRMui3::http() {
   server.on("/reset", HTTP_GET, [this](AsyncWebServerRequest * request) {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
       return request->requestAuthentication();
-    request->send(200, F("text/html"), F("ESP Reset. Device reboot..."));
+    String s = F("ESP Reset. Device reboot...");
+    s += F("\nPlease connect to Access point: ");
+    s += var(F("_as"));
+    request->send(200, F("text/plain"), s);
     request->client()->close();
     cfgDelete();
   });
