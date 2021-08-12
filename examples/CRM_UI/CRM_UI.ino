@@ -222,12 +222,12 @@ void interface() {
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["цвет в HEX формате"], [Новая группа]});
   // Значок указывается из списка icon.pdf, в формате &#[CODE];  без 0
   crm.card({CARD_CHECKBOX, "card1", "Motor", "false", "&#xf2c5;", "aaa"});
-  
+
   // Плитки с нрафиком
   // Тип: CARD_CHART_L - линии, CARD_CHART_B - бары (столбики)
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], [Новая группа]]});
   crm.card({CARD_CHART_B, "rssiraw", "WiFi RSSI RAW", "",  "", "#dddd00"});
-  
+
   // Кнопка
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["Цвет"], [Новая группа]});
   crm.card({CARD_BUTTON, "card3", "Door 3", (st3 ? "Open" : "Close"), "&#xe802;", "0ab", true});
@@ -268,6 +268,7 @@ void interface() {
     crm.input({INPUT_TEXT, "input1", "Text (pattern)", "145", "[0-9]{1,8}"});
     crm.input({INPUT_TEXT, "input2", "Output template", "Температура %T1"});
     crm.input({INPUT_NUMBER, "num1", "Only number", "123"});
+    crm.input({INPUT_PASSWORD, "pass1", "Пароль", "123456"});
   }
 
   // Поле ввода адреса электронной почты, цвета, переключателя (чекбокс).
@@ -275,7 +276,7 @@ void interface() {
   crm.input({INPUT_EMAIL, "email", "Your mail", "test@mail.ru"});
   crm.input({INPUT_COLOR, "input3", "Color", "#FF22FF"});
   crm.input({INPUT_CHECKBOX, "chk1", "Button Reboot", "false"});
-  
+
   // Смотри выше ^
   crm.output({OUTPUT_TEXT, "t11", "", txt, "#5f5"});
 
