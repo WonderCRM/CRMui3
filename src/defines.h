@@ -1,11 +1,11 @@
-#define CRM_VER F("2021.08.11a")  // r1.0.1
+#define CRM_VER F("2021.08.25a")  // r1.1.0
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
 #define INPUT_BUTTON 0
 #define INPUT_CHECKBOX 1
-//#define INPUT_FILE 2
-//#define INPUT_IMAGE 4
+#define GAUDE_1 2
+#define GAUDE_2 3
 #define INPUT_PASSWORD 5
 //#define INPUT_RADIO 6
 //#define INPUT_RESET 7
