@@ -142,7 +142,10 @@ void CRMui3::card(Card item) {
   } Chart;
 */
 void CRMui3::chart(Chart item) {
-  if (_start) return;
+  if (_start) {
+    _useChart = true;
+    return;
+  }
   if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
   _buf += String() + F("{\"t\":") + String(item.type);
   _buf += String() + F(",\"id\":\"") + item.id + "\"";
@@ -152,6 +155,45 @@ void CRMui3::chart(Chart item) {
   if (item.color != "") _buf += String() + F(",\"c\":\"") + item.color + "\"";
   if (item.height != "") _buf += String() + F(",\"h\":\"") + item.height + "\"";
   _buf += F("}]");
+}
+
+
+/*
+  typedef struct {
+  uint8_t type;
+  const String &id;
+  const String &label;
+  float min;
+  float max;
+  float def;
+  String color[6][3];
+  String unit;
+  bool group;
+  } Gauge;
+*/
+void CRMui3::gauge(Gauge item) {
+  if (_start) {
+    _useGauge = true;
+    return;
+  }
+  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
+  _buf += F("{\"c\":[");
+  for (uint8_t i = 0; i < 6; i++) {
+    if (item.color[i][0] != "") {
+      if (!_buf.endsWith(",") && !_buf.endsWith("[")) _buf += ",";
+      _buf += String() + F("[\"") + item.color[i][0] + F("\",\"") +
+              item.color[i][1] + F("\",\"") +
+              item.color[i][2] + F("\"]");
+    } else break;
+  }
+  _buf += String() + F("],\"id\":\"") + item.id;
+  _buf += String() + F("\",\"t\":") + String(item.type);
+  _buf += String() + F(",\"n\":") + String(item.min);
+  _buf += String() + F(",\"x\":") + String(item.max);
+  _buf += String() + F(",\"d\":") + String(item.def);
+  if (item.unit != "") _buf += String() + F(",\"u\":\"") + String(item.unit) + "\"";
+  if (item.group) _buf += String() + F(",\"g\":1");
+  _buf += String() + F(",\"l\":\"") + item.label + F("\"}]");
 }
 
 
