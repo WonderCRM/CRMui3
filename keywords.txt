@@ -23,6 +23,7 @@ select						KEYWORD2
 output					KEYWORD2
 card						KEYWORD2
 chart						KEYWORD2
+gauge					KEYWORD2
 wifiForm				KEYWORD2
 btnSwStatus		KEYWORD2
 btnCallback			KEYWORD2
@@ -36,3 +37,4 @@ espSleep				KEYWORD2
 setWebAuth		KEYWORD2
 setApiKey			KEYWORD2
 license					KEYWORD2
+version					KEYWORD2
