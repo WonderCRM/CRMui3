@@ -14,7 +14,8 @@
 #include "web/notif.js.h"
 #include "web/notif.css.h"
 #include "web/chart.js.h"
-#include "web/font.ttf.h"
+#include "web/gauge.js.h"
+#include "web/font.woff2.h"
 #include "web/fonticon.woff2.h"
 #include "web/favicon.ico.h"
 
@@ -66,6 +67,11 @@ void CRMui3::run() {
 }
 
 
+void CRMui3::version (const String &ver) {
+  _project_version = ver;
+}
+
+
 String CRMui3::upTime() {
   static bool upTimeInit = true;
   String b = String();
@@ -105,7 +111,6 @@ void CRMui3::defaultWifi(uint8_t mode, const String &ap_ssid, const String &ap_p
 }
 
 
-// https://github.com/lorol/ESPAsyncWebServer
 // https://github.com/me-no-dev/ESPAsyncWebServer#async-websocket-event
 // https://randomnerdtutorials.com/esp32-web-server-sent-events-sse/
 void CRMui3::http() {
@@ -151,11 +156,12 @@ void CRMui3::http() {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
       return request->requestAuthentication();
     _buf = String(F("{\"_t\":0,\"an\":\"")) + _app_name + F("\",\"id\":\"") + _id + F("\",\"fw\":\"") +
-           CRM_VER + F("\",\"a\":") + String(_AuthenticateStatus);
+           (_project_version == "" ? CRM_VER : _project_version) +
+           F("\",\"a\":") + String(_AuthenticateStatus);
     _buf += String(F(",\"lic\":\"")) + _licKey + F("\"");
-    if (_eMail != "") _buf += String(F(",\"em\":\"")) + _eMail + F("\"");
-    if (_telega != "") _buf += String(F(",\"tg\":\"")) + _telega + F("\"");
-    if (_homePage != "") _buf += String(F(",\"hp\":\"")) + _homePage + F("\"");
+    if (_eMail != "") _buf += String(F(",\"em\":\"")) + _eMail + "\"";
+    if (_telega != "") _buf += String(F(",\"tg\":\"")) + _telega + "\"";
+    if (_homePage != "") _buf += String(F(",\"hp\":\"")) + _homePage + "\"";
     _buf += F(",\"c\":[");
     ui();
     _buf += F("],\"cfg\":");
@@ -376,17 +382,29 @@ void CRMui3::http() {
   server.on("/chart.js", HTTP_GET, [this](AsyncWebServerRequest * request) {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
       return request->requestAuthentication();
-    AsyncWebServerResponse *response = request->beginResponse_P(200, F("application/javascript"), chart_js, chart_js_size);
-    response->addHeader(F("Content-Encoding"), F("gzip"));
-    request->send(response);
+    if (_useChart) {
+      AsyncWebServerResponse *response = request->beginResponse_P(200, F("application/javascript"), chart_js, chart_js_size);
+      response->addHeader(F("Content-Encoding"), F("gzip"));
+      request->send(response);
+    } else request->send(200);
   });
 
 
-  server.on("/fonts/font.ttf", HTTP_GET, [this](AsyncWebServerRequest * request) {
+  server.on("/gauge.js", HTTP_GET, [this](AsyncWebServerRequest * request) {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
       return request->requestAuthentication();
-    AsyncWebServerResponse *response = request->beginResponse_P(200, F("application/x-font-ttf"), font_ttf, font_ttf_size);
-    response->addHeader(F("Content-Encoding"), F("gzip"));
+    if (_useGauge) {
+      AsyncWebServerResponse *response = request->beginResponse_P(200, F("application/javascript"), gauge_js, gauge_js_size);
+      response->addHeader(F("Content-Encoding"), F("gzip"));
+      request->send(response);
+    } else request->send(200);
+  });
+
+
+  server.on("/fonts/font.woff2", HTTP_GET, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    AsyncWebServerResponse *response = request->beginResponse_P(200, F("font/woff2"), font_woff2, font_woff2_size);
     request->send(response);
   });
 
