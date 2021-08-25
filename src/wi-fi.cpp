@@ -1,6 +1,4 @@
-//http://developer.alexanderklimov.ru/arduino/esp32/wifi.php
 #include "CRMui3.h"
-
 
 void CRMui3::wifiEvent() {
   static bool firstConnection = false;
@@ -16,8 +14,8 @@ void CRMui3::wifiEvent() {
 
       case 5: // STA_DISCONNECTED
         if (r == 2 || r == 7 || r == 15) WiFi.reconnect();
-        else if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) &&
-						millis() - _connectingTimer >= _waitTimeForConnection) {
+        else if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) && _waitTimeForConnection != 0 &&
+                 millis() - _connectingTimer >= _waitTimeForConnection) {
           WiFi.disconnect();
           SPLN(String() + F("[WiFi] Connecting to WiFi failed. Time is over. Code ") + String(r));
         }
@@ -27,7 +25,7 @@ void CRMui3::wifiEvent() {
         SPLN(String() + F("[WiFi] Connecting to \"") + WiFi.SSID() + F("\" is done. ") +
              F("(IP: ") + WiFi.localIP().toString() + F(")"));
         if (!firstConnection && r != 200 && _wifiMode == 1) {
-		  firstConnection = true;
+          firstConnection = true;
           WiFi.mode(WIFI_STA);
           SPLN(F("[WiFi] AP mode disable."));
         }
@@ -48,7 +46,7 @@ void CRMui3::wifiEvent() {
   Disconnected = WiFi.onStationModeDisconnected([this](WiFiEventStationModeDisconnected event) {
     //Serial.printf("*Disconnected from SSID: %s\n", event.ssid.c_str());
     //Serial.printf("*Reason: %d\n", event.reason);
-    if ((_wifiMode == 1 || _wifiMode == 3) && !firstConnection &&
+    if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) && _waitTimeForConnection != 0 &&
         millis() - _connectingTimer >= _waitTimeForConnection) {
       WiFi.disconnect();
       SPLN(String(F("[WiFi] Connecting to WiFi failed. Time is over. Code ")) + String(event.reason));
