@@ -1,4 +1,4 @@
-#define CRM_VER F("2021.08.25a")  // r1.1.0
+#define CRM_VER F("2021.08.27a")  // r1.1.1
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
