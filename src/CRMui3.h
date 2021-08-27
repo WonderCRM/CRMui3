@@ -69,6 +69,17 @@ typedef struct {
   String height;
 } Chart;
 
+typedef struct {
+  uint8_t type;
+  const String &id;
+  const String &label;
+  float min;
+  float max;
+  float def;
+  String color[6][3];
+  String unit;
+  bool group;
+} Gauge;
 
 
 
@@ -91,6 +102,7 @@ class CRMui3 {
     uint8_t webConnCountStatus();
     void espSleep(uint32_t sec = 0, bool m = false);
     void license(const String &lic, const String &e = "", const String &t = "", const String &h = "");
+    void version (const String &ver);
 
     void setWebAuth(const String &login, const String &pass = "");
     void setApiKey(const String &key);
@@ -101,6 +113,7 @@ class CRMui3 {
     void range(Range);
     void card(Card);
     void chart(Chart);
+    void gauge(Gauge);
     bool btnSwStatus();
     void btnCallback(const String &name, buttonCallback response);
     void btnCallback(int, buttonCallback response, uint8_t lvl = LOW);
@@ -135,11 +148,14 @@ class CRMui3 {
     uint32_t _waitTimeForConnection = 0;
 
     String _app_name = String();
+    String _project_version = String();
     String _buf = String();
     bool _start = true;
     uint32_t _upTime = 0;
     uint32_t _runTimer = 0;
     bool _sendStatistic = false;
+    bool _useGauge = false;
+    bool _useChart = false;
 
     String _WebAuthLogin = String();
     String _WebAuthPass = String();
