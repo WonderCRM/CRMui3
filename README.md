@@ -39,6 +39,6 @@
 
 ![PROJECT_PHOTO](https://github.com/WonderCRM/CRMui3/blob/main/IDE_8266.png)
 
-*  Для ESP3
+*  Для ESP32
  
 ![PROJECT_PHOTO](https://github.com/WonderCRM/CRMui3/blob/main/IDE_32.png)
