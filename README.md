@@ -35,5 +35,10 @@
 ![PROJECT_PHOTO](https://github.com/WonderCRM/CRMui3/blob/main/scr3.png)
 
 ## Параметры загрузки в Arduino IDE
+* Для ESP8266
+
 ![PROJECT_PHOTO](https://github.com/WonderCRM/CRMui3/blob/main/IDE_8266.png)
+
+*  Для ESP3
+ 
 ![PROJECT_PHOTO](https://github.com/WonderCRM/CRMui3/blob/main/IDE_32.png)
