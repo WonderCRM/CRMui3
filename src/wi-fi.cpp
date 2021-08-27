@@ -1,4 +1,8 @@
+//http://developer.alexanderklimov.ru/arduino/esp32/wifi.php
 #include "CRMui3.h"
+
+
+
 
 void CRMui3::wifiEvent() {
   static bool firstConnection = false;
