@@ -40,6 +40,10 @@ void setup() {
   // crm.license([*Лицензионный ключ], [Электронная почта], [Телеграм], [Домашняя страница]);
   //crm.license("5s72to1", "crm.dev@bk.ru", "user624", "https://github.com/WonderCRM/CRMui3");
 
+  // Версия прошивки вашего проекта, если не используется, то отображается версия CRMui
+  // crm.version ("[Любая строка]");
+  crm.version ("1.1.0");
+
   // Аналог FreeRTOS
   // NAME.once_ms(ms, Fn); - Выполнить единожды через указанный интервал
   // NAME.attach_ms(ms, Fn); - Цикличное выполнение через указанный интервал
@@ -64,12 +68,12 @@ void loop() {
   }
   // Проверка аппаратных кнопок на нажатие
   // crm.btnCallback("[пин подключения кнопки]", [Функция для выполнения], [уровень при нажатии]);
-  crm.btnCallback(4, hw_butt, LOW);      // Check pin33 HW button
+  crm.btnCallback(4, hw_butt, LOW);      // Check pin4 HW button
 }
 
 
 void myLoopRun() {
-  static int a[3] = {};
+  static int a[3] = {0};
   static int i = 0;
   if (i > 2) i = 0;
   a[i] = WiFi.RSSI();
@@ -77,8 +81,12 @@ void myLoopRun() {
   // Обновление значений элементов веб интерфейса
   // crm.webUpdate("[ID элемента]", "[Значение]");
   // Интервал отправки 1 раз в сек.
-  crm.webUpdate("rssi", String((a[0] + a[1] + a[2]) / 3));
+  int b = (a[0] + a[1] + a[2]) / 3;
+  crm.webUpdate("rssi", String(b));
   crm.webUpdate("rssiraw", String(a[i]));
+  crm.webUpdate("G_0", String(b));
+  crm.webUpdate("G_1", String(random(-20, 60)));
+  crm.webUpdate("G_2", String(random(0, 100)));
   i++;
 }
 
@@ -217,17 +225,47 @@ void interface() {
   //crm.chart({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], ["высота графика"]});
   crm.chart({CHART_L, "rssi", "WiFi RSSI", "[1,2,3,4,5,6]",  "[1,5,3,2,6,3]", "#00dd00", "250"});
 
+  // Стрелочные индикаторы
+  // crm.gauge({[Тип], "[ID]", "[Заголовок]", [Min, шкала], [Max шкала], [Значение при загрузке], {[Цветовая палитра]}, ["Единицы измерения"], [Группировка]});
+  crm.gauge({GAUDE_1, "G_0", "WiFi RSSI", -100, -40, WiFi.RSSI(),
+    {
+      {"#FF0000", "0.0"},   // 0.0 = 0%, 1.0 = 100%
+      {"#FFFF00", "0.5"},   // Цвет, расположение на шкале
+      {"#00FF00", "1.0"}    // Количество не больше 6
+    }, "dBi"
+  });
+  crm.gauge({GAUDE_1, "G_1", "Температура", -20, 80, -20,
+    {
+      {"#FF0000", "-20", "5"},   // Указываются конкретные значения
+      {"#FFFF00", "6", "12"},    // Цвет, начало заны, конец зоны
+      {"#00FF00", "13", "24"},   // Количество не больше 6
+      {"#FFFF00", "25", "30"},   //
+      {"#FF0000", "31", "60"},   //
+      {"#DD0000", "61", "80"}    //
+    }, "°C",                     // Единицы измерения
+    true                         // Группировать с предыдущим, def = false
+  });
+  crm.gauge({GAUDE_2, "G_2", "Влажность", 0, 100, 35,
+    {
+      {"#FF0000", "0.0"},        // 0.0 = 0%, 1.0 = 100%
+      {"#FF0000", "0.3"},        // Цвет, расположение на шкале
+      {"#FFFF00", "0.7"},        // Количество не больше 6
+      {"#00FF00", "1.0"}         //   
+    }, "%",                      // Единицы измерения
+    true                         // Группировать с предыдущим, def = false
+  });
+
   // Плитки / Карточки
   // Переключатель
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["цвет в HEX формате"], [Новая группа]});
   // Значок указывается из списка icon.pdf, в формате &#[CODE];  без 0
   crm.card({CARD_CHECKBOX, "card1", "Motor", "false", "&#xf2c5;", "aaa"});
-
-  // Плитки с нрафиком
+  
+  // Плитки с графиком
   // Тип: CARD_CHART_L - линии, CARD_CHART_B - бары (столбики)
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], [Новая группа]]});
   crm.card({CARD_CHART_B, "rssiraw", "WiFi RSSI RAW", "",  "", "#dddd00"});
-
+  
   // Кнопка
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["Цвет"], [Новая группа]});
   crm.card({CARD_BUTTON, "card3", "Door 3", (st3 ? "Open" : "Close"), "&#xe802;", "0ab", true});
@@ -256,7 +294,7 @@ void interface() {
   crm.select({"select1", "Elements", "0", {{"Hide", "0"}, {"Show", "1"}}});
   // Получить значение из конфига
   // crm.var(["ID переменной"])
-  if (crm.var("select1").toInt() > 0) {
+  if (crm.var("select1").toInt()) {
     // Поля ввода даты времени
     // crm.input({[Тип], ["ID"], ["Заголовок"]});
     crm.input({INPUT_DATE, "date1", "Date"});
@@ -276,7 +314,7 @@ void interface() {
   crm.input({INPUT_EMAIL, "email", "Your mail", "test@mail.ru"});
   crm.input({INPUT_COLOR, "input3", "Color", "#FF22FF"});
   crm.input({INPUT_CHECKBOX, "chk1", "Button Reboot", "false"});
-
+  
   // Смотри выше ^
   crm.output({OUTPUT_TEXT, "t11", "", txt, "#5f5"});
 
