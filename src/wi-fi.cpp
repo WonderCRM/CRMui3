@@ -34,6 +34,8 @@ void CRMui3::wifiEvent() {
           SPLN(F("[WiFi] AP mode disable."));
         }
         break;
+      default:
+        break;
     }
   });
 
