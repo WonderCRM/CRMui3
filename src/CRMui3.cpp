@@ -40,11 +40,15 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
   getID();
   cfgLoad();
   http();
+  #ifndef USE_CUSTOM_WIFI_SETTINGS
   wifiStart();
+  #endif
   server.begin();
   if (_updateStatus) upd();
+  #ifndef USE_CUSTOM_OTA
   ArduinoOTA.setHostname(var(F("_as")).c_str());
   ArduinoOTA.begin();
+  #endif
   _start = false;
 }
 
