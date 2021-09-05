@@ -1,3 +1,11 @@
+#ifndef USE_CUSTOM_WIFI_SETTINGS
+#define USE_CUSTOM_WIFI_SETTINGS false
+#endif
+
+#ifndef USE_CUSTOM_OTA
+#define USE_CUSTOM_OTA false
+#endif
+
 #include "defines.h"
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
