@@ -1,8 +1,12 @@
+#ifndef CRMui3_h
+#define CRMui3_h
+
 #include "defines.h"
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
+#include <DNSServer.h>
 
 #ifdef ESP32
 #include "SPIFFS.h"
@@ -94,12 +98,15 @@ class CRMui3 {
   public:
     void begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)() = NULL,
                void (*apiFunction)(String) = NULL, uint32_t baud = 0);
+    void disableWiFiManagement();
+    void useArduinoOta();
     void run();
     String upTime();
     void cfgDelete();
     void espReboot();
     String getLang();
     uint8_t webConnCountStatus();
+    String wifiScan();
     void espSleep(uint32_t sec = 0, bool m = false);
     void license(const String &lic, const String &e = "", const String &t = "", const String &h = "");
     void version (const String &ver);
@@ -138,6 +145,8 @@ class CRMui3 {
     apiCallback api;
     bool _apiStatus = true;
     bool _updateStatus = true;
+    bool _disableWiFiManagement = false;
+    bool _useArduinoOta = false;
 
     void wifiEvent();
     void wifiSTA();
@@ -186,3 +195,5 @@ class CRMui3 {
 
     String _btnui = String();
 };
+
+#endif
