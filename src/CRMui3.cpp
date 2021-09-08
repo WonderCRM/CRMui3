@@ -22,6 +22,17 @@
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+DNSServer dnsServer;
+
+
+void CRMui3::disableWiFiManagement() {
+  _disableWiFiManagement = true;
+}
+
+
+void CRMui3::useArduinoOta() {
+  _useArduinoOta = true;
+}
 
 
 void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)(), void (*apiFunction)(String), uint32_t baud) {
@@ -40,21 +51,21 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
   getID();
   cfgLoad();
   http();
-  #ifndef USE_CUSTOM_WIFI_SETTINGS
-  wifiStart();
-  #endif
+  if (!_disableWiFiManagement) wifiStart();
   server.begin();
   if (_updateStatus) upd();
-  #ifndef USE_CUSTOM_OTA
-  ArduinoOTA.setHostname(var(F("_as")).c_str());
-  ArduinoOTA.begin();
-  #endif
+  if (_useArduinoOta) {
+    ArduinoOTA.setHostname(var(F("_as")).c_str());
+    ArduinoOTA.begin();
+  }
+  if (_wifiMode > 1) dnsServer.start(53, "*", WiFi.softAPIP());
   _start = false;
 }
 
 
 void CRMui3::run() {
   ArduinoOTA.handle();
+  if (_wifiMode > 1) dnsServer.processNextRequest();
   if (millis() - _runTimer >= 1000) {
     _runTimer = millis();
     _upTime++;
@@ -63,8 +74,8 @@ void CRMui3::run() {
       ws.cleanupClients();
       webUpdate("uptime", upTime());
       webUpdate("wifi", String(WiFi.RSSI()));
-      webUpdate("ram", String(ESP.getFreeHeap()));
-      webUpdate("devip", WiFi.getMode() == 2 ? WiFi.softAPIP().toString() : WiFi.localIP().toString(), true);
+      webUpdate("ram", String(ESP.getFreeHeap()), true);
+      //webUpdate("devip", WiFi.getMode() == 2 ? WiFi.softAPIP().toString() : WiFi.localIP().toString(), true);
     }
     if (_espNeedReboot) espReboot();
   }
@@ -325,6 +336,15 @@ void CRMui3::http() {
         Update.printError(Serial);
       }
     }
+  });
+
+
+  server.on("/wifi", HTTP_ANY, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    auto s = wifiScan();
+    SPLN(s);
+    request->send_P(200, "text/plain", s.c_str());
   });
 
 
