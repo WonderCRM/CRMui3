@@ -1,7 +1,4 @@
-//http://developer.alexanderklimov.ru/arduino/esp32/wifi.php
 #include "CRMui3.h"
-
-
 
 
 void CRMui3::wifiEvent() {
@@ -34,6 +31,7 @@ void CRMui3::wifiEvent() {
           SPLN(F("[WiFi] AP mode disable."));
         }
         break;
+
       default:
         break;
     }
@@ -98,30 +96,36 @@ void CRMui3::wifiStart() {
     WiFi.mode(WIFI_AP_STA);
     wifiSTA();
   }
+  WiFi.scanNetworks(true, false, false, 150);
   _connectingTimer = millis();
 }
 
 
-
-/*void CRMui3::scan(bool startScan) {
-  return;
-
-    static uint32_t timer;
-    if (timer + 1000 > millis()) return;
-    timer = millis();
-    // if(WiFi.scanComplete() != )
-    networks = WiFi.scanNetworks();
-
-    int n = WiFi.scanComplete();
-    if (n >= 0) {
-    Serial.printf("%d network(s) found\n", n);
-    for (int i = 0; i < n; i++)
-    {
-      // Serial.printf("%d: %s, Ch:%d (%ddBm) %s\n", i+1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
+String CRMui3::wifiScan() {
+  int n = WiFi.scanComplete();
+  if (n > 0) {
+    String s = "{\"s\":";
+    s += String(n) + ",\"n\":[";
+    for (int i = 0; i < n; ++i) {
+      if (i)s += ",";
+      s += "[\"";
+      s += WiFi.SSID(i) + "\",";
+      s += String(WiFi.channel(i)) + ",";
+      s += String(WiFi.RSSI(i)) + ",";
+      s += String(WiFi.encryptionType(i)) + "]";
     }
-    // WiFi.scanDelete();
-    }
-  }*/
+    s += "]}";
+    WiFi.scanNetworks(true, false, false, 150);
+    return s;
+  } else if (n == 0) {
+    return F("{\"s\":0}");
+  } else if (n == -1) {
+    return F("{\"s\":-1}");
+  } else if (n == -2) {
+    WiFi.scanNetworks(true, false, false, 150);
+    return F("{\"s\":-2}");
+  }
+}
 
 /*----------- ERROR CODE -----------
    esp_wifi_types.h, esp_event_legacy.h
@@ -134,4 +138,14 @@ void CRMui3::wifiStart() {
    204  HANDSHAKE_TIMEOUT
    205  CONNECTION_FAIL
    206  AP_TSF_RESET
+*/
+
+/*------ WiFi Encryption Type ------
+  0   WIFI_AUTH_OPEN
+  1   WIFI_AUTH_WEP
+  2   WIFI_AUTH_WPA_PSK
+  3   WIFI_AUTH_WPA2_PSK
+  4   WIFI_AUTH_WPA_WPA2_PSK
+  5   WIFI_AUTH_WPA2_ENTERPRISE
+  6   WIFI_AUTH_MAX
 */
