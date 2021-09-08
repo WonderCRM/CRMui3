@@ -38,3 +38,6 @@ setWebAuth		KEYWORD2
 setApiKey			KEYWORD2
 license					KEYWORD2
 version					KEYWORD2
+wifiScan				KEYWORD2
+disableWiFiManagement		KEYWORD2
+useArduinoOta							KEYWORD2
