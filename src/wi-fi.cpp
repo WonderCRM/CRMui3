@@ -96,7 +96,7 @@ void CRMui3::wifiStart() {
     WiFi.mode(WIFI_AP_STA);
     wifiSTA();
   }
-  WiFi.scanNetworks(true, false, false, 150);
+  WiFi.scanNetworks(true);
   _connectingTimer = millis();
 }
 
@@ -115,14 +115,14 @@ String CRMui3::wifiScan() {
       s += String(WiFi.encryptionType(i)) + "]";
     }
     s += "]}";
-    WiFi.scanNetworks(true, false, false, 150);
+    WiFi.scanNetworks(true);
     return s;
   } else if (n == 0) {
     return F("{\"s\":0}");
   } else if (n == -1) {
     return F("{\"s\":-1}");
   } else if (n == -2) {
-    WiFi.scanNetworks(true, false, false, 150);
+    WiFi.scanNetworks(true);
     return F("{\"s\":-2}");
   }
 }
