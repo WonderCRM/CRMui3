@@ -110,7 +110,6 @@ String CRMui3::upTime() {
 
 
 void CRMui3::getID() {
-  WiFi.mode(WIFI_AP);
   _id = String(WiFi.softAPmacAddress());
   SPLN(String(F("Device ID: ")) + _id + F("\n"));
 }
