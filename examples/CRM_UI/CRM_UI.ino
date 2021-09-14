@@ -16,12 +16,18 @@ void setup() {
   digitalWrite(2, LOW);
   pinMode(4, INPUT_PULLUP);            // Button pin
 
+  // Отключает управление WiFi средствами библиотеки
+  //crm.disableWiFiManagement();
+
+  // Включает возможность прошивать модуль по сети через Arduino IDE
+  crm.useArduinoOta();
+
   // Инициализация библиотеки, памяти и прочих функций
   // Параметры со * обязательны.
   // crm.begin("[*Название проекта]", [*Ф-я интерфейса], [Ф-я обновления переменных], [Ф-я API], [Скорость серийного порта, доп. отладка]);
   //crm.begin("Project-28", interface, update);
   //crm.begin("Project-28", interface, NULL, NULL, 115200);
-  crm.begin("Project-28", interface, update, api, 115200);
+  crm.begin("DEMO Project", interface, update, api, 115200);
 
   // Авторизация в веб интерфейсе
   // Параметры со * обязательны.
@@ -42,13 +48,22 @@ void setup() {
 
   // Версия прошивки вашего проекта, если не используется, то отображается версия CRMui
   // crm.version ("[Любая строка]");
-  crm.version ("1.1.0");
+  crm.version ("1.2.3.4.5");
 
   // Аналог FreeRTOS
   // NAME.once_ms(ms, Fn); - Выполнить единожды через указанный интервал
   // NAME.attach_ms(ms, Fn); - Цикличное выполнение через указанный интервал
   // NAME.detach(); - Деактивировать
   myLoop.attach_ms(2000, myLoopRun);
+
+  // crm.wifiScan()
+  // Возвращает список найденных точек доступа в виде JSON строки.
+  // Переменные: s - статус / количество сетей; n - массив сетей [Имя, канал, rssi, шифрование], ...
+  // Статус: -2 - сканирование не запущено; -1 - сканирует диапазоны; 0+ - количество найденных сетей
+  // Способ опроса асинхронный, задержка минимум, ответ по готовности при следующем запросе
+
+  // crm.uint64ToString(input);
+  // Конвертирование uint64_t в String
 }
 
 
@@ -108,7 +123,7 @@ void update() {
     // Отправить уведомление на страницу веб интерфейса
     // crm.webNotif("[Цвет]", "[Сообщение]", [время показа, с], [крестик закрыть (1, true)]);
     // Цвет: green, red, orange, blue, "" - без цвета
-    crm.webNotif(a ? "Red" : "Green", a ? "Motor start" : "Motor stop", 5);
+    crm.webNotif(a ? "Red" : "Green", a ? "Мотор запущен" : "Мотор остановлен", 5);
 
     b = a;
   }
@@ -162,19 +177,19 @@ void tablt2() {
 void card_sw3() {
   Serial.println("Card 3 Button press.");
   st3 = !st3;
-  crm.webUpdate("card3", st3 ? "Open" : "Close");
+  crm.webUpdate("card3", st3 ? "Открыта" : "Закрыта");
 }
 
 void card_sw4() {
   Serial.println("Card 4 Button press.");
   st4 = !st4;
-  crm.webUpdate("card4", st4 ? "Open" : "Close");
+  crm.webUpdate("card4", st4 ? "Открыта" : "Закрыта");
 }
 
 void card_sw5() {
   Serial.println("Card 5 Button press.");
   st5 = !st5;
-  crm.webUpdate("card5", st5 ? "Open" : "Close");
+  crm.webUpdate("card5", st5 ? "Открыта" : "Закрыта");
 }
 
 
@@ -207,7 +222,7 @@ String lng() {
 // Метод, вызывается при открытии веб интерфейса.
 void interface() {
   // Заголовок новой страницы
-  crm.page("Dash board");
+  crm.page("Главная");
 
   //Разделитель
   //crm.output({[Тип], ["Размер в px"], ["Отступы, смотри свойство: margin html"]});
@@ -215,9 +230,9 @@ void interface() {
 
   // Вывод значений в виде таблицы
   // crm.output({[Тип], ["ID"], ["Заголовок"], ["Значение при загрузке страницы"], ["цвет в HEX формате"]});
-  crm.output({OUTPUT_TABL, "t2", "Label 2", "222", "0f0"});
-  crm.output({OUTPUT_TABL, "t3", "Label 3", "333"});
-  crm.output({OUTPUT_TABL, "t4", "Label 4", "444", "f0f"});
+  crm.output({OUTPUT_TABL, "t2", "Заголовок 2", "222", "0f0"});
+  crm.output({OUTPUT_TABL, "t3", "Заголовок 3", "333"});
+  crm.output({OUTPUT_TABL, "t4", "Заголовок 4", "444", "f0f"});
   crm.output({OUTPUT_HR, "1px", "-3px 10% 0"});
 
   // График
@@ -225,32 +240,33 @@ void interface() {
   //crm.chart({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], ["высота графика"]});
   crm.chart({CHART_L, "rssi", "WiFi RSSI", "[1,2,3,4,5,6]",  "[1,5,3,2,6,3]", "#00dd00", "250"});
 
-  // Стрелочные индикаторы
+  // Дуговые индикаторы
+  // Тип: GAUDE_1 - со стрелкой, GAUDE_2 - без стрелки
   // crm.gauge({[Тип], "[ID]", "[Заголовок]", [Min, шкала], [Max шкала], [Значение при загрузке], {[Цветовая палитра]}, ["Единицы измерения"], [Группировка]});
   crm.gauge({GAUDE_1, "G_0", "WiFi RSSI", -100, -40, WiFi.RSSI(),
     {
       {"#FF0000", "0.0"},   // 0.0 = 0%, 1.0 = 100%
-      {"#FFFF00", "0.5"},   // Цвет, расположение на шкале
+      {"#FFFF00", "0.5"},   // Цвет, расположение на шкале, в формате HEX
       {"#00FF00", "1.0"}    // Количество не больше 6
     }, "dBi"
   });
-  crm.gauge({GAUDE_1, "G_1", "Температура", -20, 80, -20,
+  crm.gauge({GAUDE_1, "G_1", "Температура", -20, 80, 0,
     {
       {"#FF0000", "-20", "5"},   // Указываются конкретные значения
-      {"#FFFF00", "6", "12"},    // Цвет, начало заны, конец зоны
+      {"#FFFF00", "6", "12"},    // Цвет, начало заны, конец зоны, в формате HEX
       {"#00FF00", "13", "24"},   // Количество не больше 6
       {"#FFFF00", "25", "30"},   //
       {"#FF0000", "31", "60"},   //
-      {"#DD0000", "61", "80"}    //
+      {"#FF0000", "62", "80"}    //
     }, "°C",                     // Единицы измерения
     true                         // Группировать с предыдущим, def = false
   });
   crm.gauge({GAUDE_2, "G_2", "Влажность", 0, 100, 35,
     {
       {"#FF0000", "0.0"},        // 0.0 = 0%, 1.0 = 100%
-      {"#FF0000", "0.3"},        // Цвет, расположение на шкале
+      {"#FF0000", "0.3"},        // Цвет, расположение на шкале, в формате HEX
       {"#FFFF00", "0.7"},        // Количество не больше 6
-      {"#00FF00", "1.0"}         //   
+      {"#00FF00", "1.0"}         //
     }, "%",                      // Единицы измерения
     true                         // Группировать с предыдущим, def = false
   });
@@ -259,18 +275,18 @@ void interface() {
   // Переключатель
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["цвет в HEX формате"], [Новая группа]});
   // Значок указывается из списка icon.pdf, в формате &#[CODE];  без 0
-  crm.card({CARD_CHECKBOX, "card1", "Motor", "false", "&#xf2c5;", "aaa"});
-  
+  crm.card({CARD_CHECKBOX, "card1", "Мотор", "false", "&#xf2c5;", "aaa"});
+
   // Плитки с графиком
   // Тип: CARD_CHART_L - линии, CARD_CHART_B - бары (столбики)
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], [Новая группа]]});
   crm.card({CARD_CHART_B, "rssiraw", "WiFi RSSI RAW", "",  "", "#dddd00"});
-  
+
   // Кнопка
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["Цвет"], [Новая группа]});
-  crm.card({CARD_BUTTON, "card3", "Door 3", (st3 ? "Open" : "Close"), "&#xe802;", "0ab", true});
-  crm.card({CARD_BUTTON, "card4", "Door 4", (st4 ? "Open" : "Close"), "&#xe802;", "#a0b"});
-  crm.card({CARD_BUTTON, "card5", "Door 5", (st5 ? "Open" : "Close"), "&#xe805;", "#0ab"});
+  crm.card({CARD_BUTTON, "card3", "Дверь 3", (st3 ? "Открыта" : "Закрыта"), "&#xe802;", "0ab", true});
+  crm.card({CARD_BUTTON, "card4", "Дверь 4", (st4 ? "Открыта" : "Закрыта"), "&#xe802;", "#a0b"});
+  crm.card({CARD_BUTTON, "card5", "Дверь 5", (st5 ? "Открыта" : "Закрыта"), "&#xe805;", "#0ab"});
 
   // Для отображения значков в текстовых полях заключаем их в <z></z>
   // Пример <z>&#xf1c9;</z>
@@ -278,7 +294,7 @@ void interface() {
 
   // Текстовое поле справка
   //crm.output({[Тип], ["ID"], "["Заголовок"]", ["Текст"], ["цвет в HEX формате"]});
-  crm.output({OUTPUT_TEXT, "t1", "Any label text", txt, "#ff5"});
+  crm.output({OUTPUT_TEXT, "t1", "Любой текст", txt, "#ff5"});
 
   // Кнопки
   // crm.input({[Тип], ["ID"], ["Заголовок / значок"], ["Внутренние отступы, смотри: padding html"], ["r - вряд"], ["Размер"]});
@@ -288,40 +304,43 @@ void interface() {
   crm.input({INPUT_BUTTON, "b4", "&#xe815;", "30px 11px 10px 15px", "r", "35"});
 
 
-  crm.page("Settings");
+  crm.page("Настройки");
   // Поле выбора (селект)
   // crm.select({["ID"], ["Заголовок / значок"], ["Значение по умолчанию"], ["Значения {{A:1},{B:2},{N:n}}] });
-  crm.select({"select1", "Elements", "0", {{"Hide", "0"}, {"Show", "1"}}});
+  crm.select({"select1", "Доп. опции", "0", {{"Скрыть", "0"}, {"Показать", "1"}}});
   // Получить значение из конфига
   // crm.var(["ID переменной"])
   if (crm.var("select1").toInt()) {
     // Поля ввода даты времени
     // crm.input({[Тип], ["ID"], ["Заголовок"]});
-    crm.input({INPUT_DATE, "date1", "Date"});
-    crm.input({INPUT_TIME, "time1", "Time"});
-    crm.input({INPUT_DATETIME, "datatime1", "Date & Time"});
+    crm.input({INPUT_DATE, "date1", "Дата"});
+    crm.input({INPUT_TIME, "time1", "Время"});
+    crm.input({INPUT_DATETIME, "datetime", "Дата и Время"});
 
     // Поле ввода текста и цифр, поддерживает паттерн, смотри в интернете.
     // crm.input({[Тип], ["ID"], ["Заголовок / значок"], ["Значение по умолчанию"], ["паттерн, смотри в инете"]});
-    crm.input({INPUT_TEXT, "input1", "Text (pattern)", "145", "[0-9]{1,8}"});
-    crm.input({INPUT_TEXT, "input2", "Output template", "Температура %T1"});
-    crm.input({INPUT_NUMBER, "num1", "Only number", "123"});
+    crm.input({INPUT_TEXT, "input1", "Текст (паттерн)", "145", "[0-9]{1,8}"});
+    crm.input({INPUT_TEXT, "input2", "Шаблон температурыe", "Температура %T1"});
+    crm.input({INPUT_NUMBER, "num1", "Только цыфры", "123"});
     crm.input({INPUT_PASSWORD, "pass1", "Пароль", "123456"});
   }
 
   // Поле ввода адреса электронной почты, цвета, переключателя (чекбокс).
   // crm.input({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"] });
-  crm.input({INPUT_EMAIL, "email", "Your mail", "test@mail.ru"});
-  crm.input({INPUT_COLOR, "input3", "Color", "#FF22FF"});
-  crm.input({INPUT_CHECKBOX, "chk1", "Button Reboot", "false"});
-  
+  crm.input({INPUT_EMAIL, "email", "Мыло", "test@mail.ru"});
+  crm.input({INPUT_COLOR, "input3", "Цвет", "#FF22FF"});
+
+  // crm.input({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Обновление интерфейса: 1"] });
+  crm.input({INPUT_CHECKBOX, "chk1", "Кнопка перезагрузки", "false", "1"});
+  crm.input({INPUT_CHECKBOX, "chk2", "Подсветка", "true"});
+
   // Смотри выше ^
   crm.output({OUTPUT_TEXT, "t11", "", txt, "#5f5"});
 
   // Ползунок
   // crm.range({["ID"], ["Заголовок"], ["Значение по умолчанию"], ["MIN"], ["MAX"], [Шаг], ["Единицы измерения"]});
-  crm.range({"range1", "Volume", 12, 0, 84, 1});						//Без единиц измерения
-  crm.range({"range2", "Brightness", 52, 0, 84, 1, " lux"});	//С единицами измерения
+  crm.range({"range1", "Громкость", 12, 0, 84, 1});						//Без единиц измерения
+  crm.range({"range2", "Яркость", 52, 0, 84, 1, " попугаея"});	//С единицами измерения
   if (crm.var("chk1") == "true") crm.input({INPUT_BUTTON, "reboot", "&#xe810;", "8px 9px 8px 14px", "row", "50"});
 
   crm.page("Wi-Fi");
@@ -329,5 +348,5 @@ void interface() {
   // crm.wifiForm([Режим работы], ["Название ТД"], ["Пароль ТД"], ["WiFi сеть для подключения", ["Пароль сети"], ["Время ожидания подключения"]]);
   // Режим работы: WIFI_AP - точка доступа, WIFI_STA - клиент, WIFI_AP_STA - ТД + Клиент
   crm.wifiForm(WIFI_AP, "MY-AP");
-  crm.input({INPUT_BUTTON, "reboot", "REBOOT"});
+  crm.input({INPUT_BUTTON, "reboot", "Перезагрузить"});
 }
