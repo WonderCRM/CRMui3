@@ -110,6 +110,7 @@ class CRMui3 {
     void espSleep(uint32_t sec = 0, bool m = false);
     void license(const String &lic, const String &e = "", const String &t = "", const String &h = "");
     void version (const String &ver);
+    String uint64ToString(uint64_t v);
 
     void setWebAuth(const String &login, const String &pass = "");
     void setApiKey(const String &key);
@@ -162,7 +163,7 @@ class CRMui3 {
     bool _start = true;
     uint32_t _upTime = 0;
     uint32_t _runTimer = 0;
-    bool _sendStatistic = false;
+    bool _sentingToWeb = false;
     bool _useGauge = false;
     bool _useChart = false;
 
