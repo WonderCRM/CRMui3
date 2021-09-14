@@ -1,3 +1,4 @@
+//http://developer.alexanderklimov.ru/arduino/esp32/wifi.php
 #include "CRMui3.h"
 
 
@@ -5,8 +6,14 @@ void CRMui3::wifiEvent() {
   static bool firstConnection = false;
 
 #ifdef ESP32
+  // Core 1.0.6    v3.3.5-1-g85c43024c
   WiFi.onEvent([this](system_event_id_t event, system_event_info_t info) {
     const int r = info.disconnected.reason;
+
+    // Core 2.0.0   v4.4-dev-2313-gc69f0ec32
+    //WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
+    //const int r = info.wifi_sta_disconnected.reason;
+
     //Serial.println("[WiFi] Event: " + String(event) + ",  Reason: " + String(r));
 
     switch (event) {
@@ -32,6 +39,10 @@ void CRMui3::wifiEvent() {
         }
         break;
 
+      case 17: // SYSTEM_EVENT_AP_STADISCONNECTED
+        if (WiFi.softAPgetStationNum() < 1) _sentingToWeb = false;
+        break;
+
       default:
         break;
     }
@@ -40,7 +51,7 @@ void CRMui3::wifiEvent() {
 #else
 
   // ESP8266
-  static WiFiEventHandler Disconnected, GotIP;
+  static WiFiEventHandler Disconnected, GotIP, APDisconnected;
 
   //wifi evt: 0
   /*Connected = WiFi.onStationModeConnected([this](WiFiEventStationModeConnected event) {
@@ -48,8 +59,7 @@ void CRMui3::wifiEvent() {
 
   //wifi evt: 1
   Disconnected = WiFi.onStationModeDisconnected([this](WiFiEventStationModeDisconnected event) {
-    //Serial.printf("*Disconnected from SSID: %s\n", event.ssid.c_str());
-    //Serial.printf("*Reason: %d\n", event.reason);
+    //Serial.printf("[WiFi][E%d][R%d] Disconnected from SSID: %s\n", event, event.reason, event.ssid.c_str());
     if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) && _waitTimeForConnection != 0 &&
         millis() - _connectingTimer >= _waitTimeForConnection) {
       WiFi.disconnect();
@@ -66,6 +76,11 @@ void CRMui3::wifiEvent() {
       WiFi.mode(WIFI_STA);
       SPLN(F("[WiFi] AP mode disable."));
     }
+  });
+
+  //wifi evt: 6
+  APDisconnected = WiFi.onSoftAPModeStationDisconnected([this](WiFiEventSoftAPModeStationDisconnected event) {
+    if (WiFi.softAPgetStationNum() < 1) _sentingToWeb = false;
   });
 #endif
 }
@@ -86,17 +101,16 @@ void CRMui3::wifiAP() {
 void CRMui3::wifiStart() {
   _wifiMode = var(F("_wm")).toInt();
   _waitTimeForConnection = var(F("_wt")).toInt() * 1000UL;
-
   WiFi.persistent(false);
-  wifiEvent();
 
+  wifiEvent();
   wifiAP();
   if (_wifiMode == 1) wifiSTA();
   else if (_wifiMode == 3) {
     WiFi.mode(WIFI_AP_STA);
     wifiSTA();
   }
-  WiFi.scanNetworks(true);
+  //if (_wifiMode == 2) WiFi.scanNetworks(true);
   _connectingTimer = millis();
 }
 
@@ -128,9 +142,10 @@ String CRMui3::wifiScan() {
 }
 
 /*----------- ERROR CODE -----------
-   esp_wifi_types.h, esp_event_legacy.h
+   ESP8266  ESP8266WiFiType.h
+   ESP32    esp_wifi_types.h, esp_event_legacy.h
 
-   Reason
+   [WiFi][R...]Reason
    200  BEACON_TIMEOUT
    201  AP not found
    202  AUTH_FAIL
