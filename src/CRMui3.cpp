@@ -65,17 +65,15 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
 
 void CRMui3::run() {
   ArduinoOTA.handle();
-  if (_wifiMode > 1) dnsServer.processNextRequest();
   if (millis() - _runTimer >= 1000) {
     _runTimer = millis();
     _upTime++;
+    if (_wifiMode > 1) dnsServer.processNextRequest();
     cfgAutoSave();
-    if (_sendStatistic) {
-      ws.cleanupClients();
+    if (_sentingToWeb == true) {
       webUpdate("uptime", upTime());
       webUpdate("wifi", String(WiFi.RSSI()));
       webUpdate("ram", String(ESP.getFreeHeap()), true);
-      //webUpdate("devip", WiFi.getMode() == 2 ? WiFi.softAPIP().toString() : WiFi.localIP().toString(), true);
     }
     if (_espNeedReboot) espReboot();
   }
@@ -110,7 +108,11 @@ String CRMui3::upTime() {
 
 
 void CRMui3::getID() {
-  _id = String(WiFi.softAPmacAddress());
+#ifdef ESP32
+  _id = uint64ToString(ESP.getEfuseMac());
+#else
+  _id = String(ESP.getChipId()) + String(ESP.getFlashChipId());
+#endif
   SPLN(String(F("Device ID: ")) + _id + F("\n"));
 }
 
@@ -130,12 +132,13 @@ void CRMui3::defaultWifi(uint8_t mode, const String &ap_ssid, const String &ap_p
 void CRMui3::http() {
   ws.onEvent([this](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_CONNECT) {
-      _sendStatistic = true;
+      _sentingToWeb = true;
+      ws.cleanupClients();
       //client->ping();
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Connect"));
     } else if (type == WS_EVT_DISCONNECT) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Disconnect"));
-      if (ws.count() < 1) _sendStatistic = false;
+      if (ws.count() < 1) _sentingToWeb = false;
     } else if (type == WS_EVT_ERROR) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Error"));
     }/* else if (type == WS_EVT_PONG) {
@@ -181,19 +184,19 @@ void CRMui3::http() {
     _buf += F("],\"cfg\":");
     serializeJson(cfg, _buf);
     _buf += "}";
-    request->send_P(200, F("text/plain"), _buf.c_str());
+    if (_buf.length() > 7000) request->send_P(200, F("text/plain"), _buf.c_str());
+    else request->send(200, F("text/plain"), _buf);
     _buf = String();
   });
 
 
-  server.on("/set", HTTP_POST, [this](AsyncWebServerRequest * request) {    //HTTP_ANY
+  server.on("/set", HTTP_POST, [this](AsyncWebServerRequest * request) {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
       return request->requestAuthentication();
     request->send(200);
     int headers = request->params();
     for (int i = 0; i < headers; i++) {
       AsyncWebParameter* p = request->getParam(i);
-      //if (p->isPost()) {
       String pname = p->name();
       if (pname.indexOf("BT_") != -1) _btnui = pname.substring(3);
       else if (pname == "wUPD") ws.textAll(String("{\"_t\":0}").c_str());
@@ -206,9 +209,6 @@ void CRMui3::http() {
         if (webConnCountStatus() > 1) ws.textAll(String("{\"_t\":2,\"d\":[[\"" + pname + "\",\"" + p->value() + "\"]]}").c_str());
         if (_updateStatus) upd();
       }
-      /*} else if (p->isFile()) {
-        Serial.printf("[FILE] %s: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-        }*/
     }
   });
 
@@ -342,8 +342,8 @@ void CRMui3::http() {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
       return request->requestAuthentication();
     auto s = wifiScan();
-    SPLN(s);
-    request->send_P(200, "text/plain", s.c_str());
+    DBGLN(s);
+    request->send(200, "text/plain", s);
   });
 
 
@@ -497,7 +497,7 @@ void CRMui3::apiResponse(const String &p, const String &v) {
 
 
 void CRMui3::webUpdate(const String &name, const String &value, bool n) {
-  if (webConnCountStatus()) {
+  if (_sentingToWeb) {
     if (name == "") ws.textAll(String("{\"_t\":0}").c_str());
     else {
       static String b = String();
@@ -532,6 +532,19 @@ void CRMui3::espReboot() {
   delay(200);
   DBGLN(F("ESP Reboot..."));
   ESP.restart();
+}
+
+
+String CRMui3::uint64ToString(uint64_t v) {
+  String s = String();
+  do {
+    char c = v % 10;
+    v /= 10;
+    if (c < 10) c += '0';
+    else c += 'A' - 10;
+    s = c + s;
+  } while (v);
+  return s;
 }
 
 
