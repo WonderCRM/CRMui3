@@ -86,6 +86,7 @@ typedef struct {
 } Gauge;
 
 
+typedef void(*CRMui3ButtonCallback) (const char *);
 
 class CRMui3 {
     StaticJsonDocument<4096> cfg;
@@ -95,7 +96,8 @@ class CRMui3 {
     typedef void (*updateCallback) ();
     typedef void (*apiCallback) (String);
 
-  public:
+public:
+	  CRMui3():btnCallbackFunc(0){}
     void begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)() = NULL,
                void (*apiFunction)(String) = NULL, uint32_t baud = 0);
     void disableWiFiManagement();
@@ -140,10 +142,13 @@ class CRMui3 {
     void var(const String &name, uint32_t, bool save = true);
     void var(const String &name, char, bool save = true);
 
+	void btnCallback(CRMui3ButtonCallback func) { btnCallbackFunc = func; }
+
   private:
     uiCallback ui;
     updateCallback upd;
     apiCallback api;
+	CRMui3ButtonCallback btnCallbackFunc;
     bool _apiStatus = true;
     bool _updateStatus = true;
     bool _disableWiFiManagement = false;

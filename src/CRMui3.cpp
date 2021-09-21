@@ -43,6 +43,11 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
   }
   SPLN(String(F("\nCRMui3 ver:")) + CRM_VER);
   ui = uiFunction;
+  if (ui == NULL)
+  {
+	  SPLN(String(F("\nuiFunction not defined")));
+	  return;
+  }
   if (updateFunction != NULL) upd = updateFunction;
   else _updateStatus = false;
   if (apiFunction != NULL) api = apiFunction;
@@ -53,7 +58,8 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
   http();
   if (!_disableWiFiManagement) wifiStart();
   server.begin();
-  if (_updateStatus) upd();
+  if (updateFunction)
+	  upd();
   if (_useArduinoOta) {
     ArduinoOTA.setHostname(var(F("_as")).c_str());
     ArduinoOTA.begin();
@@ -198,7 +204,12 @@ void CRMui3::http() {
     for (int i = 0; i < headers; i++) {
       AsyncWebParameter* p = request->getParam(i);
       String pname = p->name();
-      if (pname.indexOf("BT_") != -1) _btnui = pname.substring(3);
+	  if (pname.indexOf("BT_") != -1)
+	  {
+		  _btnui = pname.substring(3);
+		  if (btnCallbackFunc)
+			  btnCallbackFunc(_btnui.c_str());
+	  }
       else if (pname == "wUPD") ws.textAll(String("{\"_t\":0}").c_str());
       else {
         DBGLN(pname + F(" = ") + p->value());
@@ -207,7 +218,8 @@ void CRMui3::http() {
           var(pname, p->value(), false);
         } else var(pname, p->value());
         if (webConnCountStatus() > 1) ws.textAll(String("{\"_t\":2,\"d\":[[\"" + pname + "\",\"" + p->value() + "\"]]}").c_str());
-        if (_updateStatus) upd();
+        if (upd)
+			upd();
       }
     }
   });
@@ -298,7 +310,8 @@ void CRMui3::http() {
         for (JsonPair kv : doc.as<JsonObject>()) {
           var(String(kv.key().c_str()), kv.value().as<String>());
         }
-        if (_updateStatus) upd();
+        if (upd)
+			upd();
         request->send(200, F("text/html"), F("Config file update."));
         Serial.println(String(F("Configuratoin from ")) + filename + F(" write to SPIFFS."));
       } else {
