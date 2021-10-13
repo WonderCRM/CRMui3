@@ -15,7 +15,7 @@ void CRMui3::cfgSave() {
     configFile.close();
     _AutoSaveStatus = false;
     deserializeJson(cfg, cfg_str);
-    DBGLN(F("Config SAVED"));
+    DBGLN(F("[CFG] Config SAVED"));
   }
 }
 
@@ -28,15 +28,15 @@ void CRMui3::cfgLoad() {
       configFile.close();
       if (cfg_str != "") {
         deserializeJson(cfg, cfg_str);
-      } else SPLN(F("Failed to open or read config file\nLoaded default value"));
-    } else SPLN (F("Can't finded config.json file\nLoaded default value"));
+      } else SPLN(F("[CFG] Failed to open or read config file\nLoaded default value"));
+    } else SPLN (F("[CFG] Can't finded config.json file\nLoaded default value"));
     if (var(F("_L")) == F("null")) var(F("_L"), F("ru"));
     if (var(F("_C1")) == F("null")) var(F("_C1"), F("#0098d9"));
     if (var(F("_C2")) == F("null")) var(F("_C2"), F("#ffffff"));
     ui();
     cfgPrint();
     cfgSave();
-  } else SPLN (F("\n\nCan't initialize SPIFFS"));
+  } else SPLN (F("\n\n[CFG] Can't initialize SPIFFS"));
 }
 
 
@@ -60,7 +60,7 @@ void CRMui3::cfgPrint() {
 void CRMui3::cfgDelete() {
   if (!SPIFFS.begin(FORMAT_FS_IF_FAILED)) SPLN(F("Mount SPIFFS error. Format..."));
   else {
-    SP(F("Format SPIFFS, please wait..."));
+    SP(F("[CFG] Format SPIFFS, please wait..."));
     SPIFFS.format();
   }
   WiFi.disconnect(true);
