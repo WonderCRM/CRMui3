@@ -73,6 +73,7 @@ void CRMui3::output(Output item) {
   _buf += String() + F(",\"l\":\"") + item.label + "\"";
   _buf += String() + F(",\"d\":\"") + item.def + "\"";
   if (item.c != "") _buf += String() + F(",\"c\":\"") + item.c + "\"";
+  if (item.s != "") _buf += String() + F(",\"s\":\"") + item.s + "\"";
   _buf += F("}]");
 }
 
@@ -121,9 +122,18 @@ void CRMui3::card(Card item) {
   _buf += String() + F("{\"t\":") + String(item.type);
   _buf += String() + F(",\"id\":\"") + item.id + "\"";
   _buf += String() + F(",\"l\":\"") + item.label + "\"";
-  if (item.type != CARD_CHECKBOX)
-    _buf += String() + F(",\"v\":\"") + item.defaultValue + "\"";
-  if (item.icon != "") _buf += String() + F(",\"i\":\"") + item.icon + "\"";
+  if (item.type != CARD_CHECKBOX && item.defaultValue != "") {
+    _buf += F(",\"v\":");
+    if (item.type < CARD_CHART_L) _buf += "\"";
+    _buf += item.defaultValue;
+    if (item.type < CARD_CHART_L) _buf += "\"";
+  }
+  if (item.icon != "") {
+    _buf += F(",\"i\":");
+    if (item.type < CARD_CHART_L) _buf += "\"";
+    _buf += item.icon;
+    if (item.type < CARD_CHART_L) _buf += "\"";
+  }
   if (item.color != "") _buf += String() + F(",\"c\":\"") + item.color + "\"";
   if (item.newGroup) _buf += String() + F(",\"n\":1");
   _buf += F("}]");
@@ -150,8 +160,8 @@ void CRMui3::chart(Chart item) {
   _buf += String() + F("{\"t\":") + String(item.type);
   _buf += String() + F(",\"id\":\"") + item.id + "\"";
   _buf += String() + F(",\"l\":\"") + item.label + "\"";
-  if (item.labelLine != "") _buf += String() + F(",\"a\":") + item.labelLine + "";
-  if (item.valueLine != "") _buf += String() + F(",\"b\":") + item.valueLine + "";
+  if (item.labelLine != "") _buf += String() + F(",\"a\":") + item.labelLine;
+  if (item.valueLine != "") _buf += String() + F(",\"b\":") + item.valueLine;
   if (item.color != "") _buf += String() + F(",\"c\":\"") + item.color + "\"";
   if (item.height != "") _buf += String() + F(",\"h\":\"") + item.height + "\"";
   _buf += F("}]");
