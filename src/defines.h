@@ -1,4 +1,7 @@
-#define CRM_VER F("2021.10.13a")  // r1.2.4
+#ifndef defines_h
+#define defines_h
+
+#define CRM_VER F("2021.09.14a")  // r1.2.3
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
@@ -50,3 +53,5 @@
   Serial.print(F(" | M")); \
   Serial.println(ESP.getFreeHeap()); \
   Serial.flush();
+
+#endif
