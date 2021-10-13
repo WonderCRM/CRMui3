@@ -11,6 +11,8 @@ Ticker myLoop;  // Ticker
 bool st3, st4, st5;
 
 
+void btnResponce(const char *name);
+
 void setup() {
   pinMode(2, OUTPUT);
   digitalWrite(2, LOW);
@@ -21,6 +23,10 @@ void setup() {
 
   // Включает возможность прошивать модуль по сети через Arduino IDE
   crm.useArduinoOta();
+
+  // callBackButtonEvent. Обработка web кнопок по событию
+  // crm.btnCallback([Event function]);
+  crm.btnCallback(btnResponce);
 
   // Инициализация библиотеки, памяти и прочих функций
   // Параметры со * обязательны.
@@ -62,8 +68,16 @@ void setup() {
   // Статус: -2 - сканирование не запущено; -1 - сканирует диапазоны; 0+ - количество найденных сетей
   // Способ опроса асинхронный, задержка минимум, ответ по готовности при следующем запросе
 
-  // crm.uint64ToString(input);
   // Конвертирование uint64_t в String
+  // crm.uint64ToStr(uint64_t);
+  // Конвертирование String в cost Char*
+  // crm.strToChr(String);
+  //
+  // Только для ESP32
+  //
+  // Глубокий / Лёгкий сон
+  // Режим: 1 - глубокий, 0 - Лёгкий (сохраняются значения всех переменных)
+  // crm.espSleep([Время в секундах], [режим]);
 }
 
 
@@ -76,7 +90,6 @@ void loop() {
     // Проверка конкретных кнопок на нажатие
     // crm.btnCallback("[ID кнопки]", [Функция для выполнения]);
     crm.btnCallback("reboot", reboot);    // Check "reboot" SW button
-    crm.btnCallback("card3", card_sw3);   // Check "card3" SW button
     crm.btnCallback("card4", card_sw4);   // Check "card4" SW button
     crm.btnCallback("card5", card_sw5);   // Check "card5" SW button
     crm.btnCallback("b3", tablt2);        // Check "b3" SW button
@@ -153,7 +166,7 @@ void api(String p) {
   //Запрос http://IP/api?random=500
   const char* rnd = doc["random"];
   if (rnd != NULL) {
-    crm.apiResponse("Random", String(random(String(rnd).toInt())));
+    crm.apiResponse("Random", String(random(atoi(rnd))));
   }
 
   //Запрос http://IP/api?print=[any_text]
@@ -169,16 +182,15 @@ void hw_butt() {
   Serial.println("HW BUTTON PRESS!");
 }
 
-void tablt2() {
-  Serial.println("Button STOP press.");
-  crm.webUpdate("t2", String(millis()));
+// ------- Through a callBackButton Event -------------
+void btnResponce(const char *name) {
+  if (strcmp(name, "card3") == 0) {
+    Serial.println("Card 3 Button press.");
+    st3 = !st3;
+    crm.webUpdate("card3", st3 ? "Открыта" : "Закрыта");
+  }
 }
-
-void card_sw3() {
-  Serial.println("Card 3 Button press.");
-  st3 = !st3;
-  crm.webUpdate("card3", st3 ? "Открыта" : "Закрыта");
-}
+// ----------------------------------------------------
 
 void card_sw4() {
   Serial.println("Card 4 Button press.");
@@ -190,6 +202,11 @@ void card_sw5() {
   Serial.println("Card 5 Button press.");
   st5 = !st5;
   crm.webUpdate("card5", st5 ? "Открыта" : "Закрыта");
+}
+
+void tablt2() {
+  Serial.println("Button STOP press.");
+  crm.webUpdate("t2", String(millis()));
 }
 
 
@@ -222,7 +239,7 @@ String lng() {
 // Метод, вызывается при открытии веб интерфейса.
 void interface() {
   // Заголовок новой страницы
-  crm.page("Главная");
+  crm.page("&#xe802; Главная");
 
   //Разделитель
   //crm.output({[Тип], ["Размер в px"], ["Отступы, смотри свойство: margin html"]});
@@ -237,8 +254,9 @@ void interface() {
 
   // График
   // Тип: CHART_L - линии, CHART_B - бары (столбики)
-  //crm.chart({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], ["высота графика"]});
-  crm.chart({CHART_L, "rssi", "WiFi RSSI", "[1,2,3,4,5,6]",  "[1,5,3,2,6,3]", "#00dd00", "250"});
+  // Данные: [] - сохранять значения при навигации по разделам; "" - не сохранять
+  //crm.chart({ [Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], ["высота графика"] });
+  crm.chart({CHART_L, "rssi", "WiFi RSSI", "[1,2,3,4,5]",  "[1,2,3,4,5]", "#00dd00", "250"});
 
   // Дуговые индикаторы
   // Тип: GAUDE_1 - со стрелкой, GAUDE_2 - без стрелки
@@ -272,15 +290,18 @@ void interface() {
   });
 
   // Плитки / Карточки
+  //
   // Переключатель
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["цвет в HEX формате"], [Новая группа]});
-  // Значок указывается из списка icon.pdf, в формате &#[CODE];  без 0
+  // Значок указывается из списка icon.pdf, в формате [&#[CODE]];  без 0
+  // Состояние автоматический не сохраняется в память
   crm.card({CARD_CHECKBOX, "card1", "Мотор", "false", "&#xf2c5;", "aaa"});
 
   // Плитки с графиком
   // Тип: CARD_CHART_L - линии, CARD_CHART_B - бары (столбики)
+  // Данные: [] - сохранять значения при навигации по разделам; "" - не сохранять
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["[Массив заголовков]"], ["[Данные]"], ["цвет в HEX формате"], [Новая группа]]});
-  crm.card({CARD_CHART_B, "rssiraw", "WiFi RSSI RAW", "",  "", "#dddd00"});
+  crm.card({CARD_CHART_B, "rssiraw", "WiFi RSSI RAW", "[]",  "[]", "#dddd00"});
 
   // Кнопка
   // crm.card({[Тип], ["ID"], ["Заголовок"], ["Значение по умолчанию"], ["Значок"], ["Цвет"], [Новая группа]});
@@ -288,9 +309,9 @@ void interface() {
   crm.card({CARD_BUTTON, "card4", "Дверь 4", (st4 ? "Открыта" : "Закрыта"), "&#xe802;", "#a0b"});
   crm.card({CARD_BUTTON, "card5", "Дверь 5", (st5 ? "Открыта" : "Закрыта"), "&#xe805;", "#0ab"});
 
-  // Для отображения значков в текстовых полях заключаем их в <z></z>
-  // Пример <z>&#xf1c9;</z>
-  String txt = F("<z>&#xf1c9;</z> In computer science, an array data structure, or simply an array, is a data structure consisting of a collection of elements (values or variables), each identified by at least one array index or key. An array is stored such that the position of each element can be computed from its index tuple by a mathematical formula.[1][2][3] The simplest type of data structure is a linear array, also called one-dimensional array.");
+  // Использование значков: &#[код];
+  // Пример:  &#xf1c9;
+  String txt = F("&#xf1c9; In computer science, an array data structure, or simply an array, is a data structure consisting of a collection of elements (values or variables), each identified by at least one array index or key. &#xf1c9; An array is stored such that the position of each element can be computed from its index tuple by a mathematical formula.[1][2][3] The simplest type of data structure is a linear array, also called one-dimensional array.");
 
   // Текстовое поле справка
   //crm.output({[Тип], ["ID"], "["Заголовок"]", ["Текст"], ["цвет в HEX формате"]});
@@ -304,7 +325,7 @@ void interface() {
   crm.input({INPUT_BUTTON, "b4", "&#xe815;", "30px 11px 10px 15px", "r", "35"});
 
 
-  crm.page("Настройки");
+  crm.page("&#xf1de; Настройки");
   // Поле выбора (селект)
   // crm.select({["ID"], ["Заголовок / значок"], ["Значение по умолчанию"], ["Значения {{A:1},{B:2},{N:n}}] });
   crm.select({"select1", "Доп. опции", "0", {{"Скрыть", "0"}, {"Показать", "1"}}});
@@ -337,13 +358,19 @@ void interface() {
   // Смотри выше ^
   crm.output({OUTPUT_TEXT, "t11", "", txt, "#5f5"});
 
+  // Разделитель заголовок
+  // crm.output({ [Тип], ["ID"], ["Заголовок"], ["Выравнивание"], ["#Цвет RGB"], ["Размер px"] });
+  // Выравнивание: left, center, right;
+  // Если не заменять заголовок через webUpdate, поле ID можно оставить пустым.
+  crm.output({OUTPUT_LABEL, "lb1", "Ползунки", "left", "#0f0", "20"});
+
   // Ползунок
   // crm.range({["ID"], ["Заголовок"], ["Значение по умолчанию"], ["MIN"], ["MAX"], [Шаг], ["Единицы измерения"]});
   crm.range({"range1", "Громкость", 12, 0, 84, 1});						//Без единиц измерения
   crm.range({"range2", "Яркость", 52, 0, 84, 1, " попугаея"});	//С единицами измерения
   if (crm.var("chk1") == "true") crm.input({INPUT_BUTTON, "reboot", "&#xe810;", "8px 9px 8px 14px", "row", "50"});
 
-  crm.page("Wi-Fi");
+  crm.page("<z class='zanim'>&#xe82b;</z> Wi-Fi");
   // форма с полями для WiFi
   // crm.wifiForm([Режим работы], ["Название ТД"], ["Пароль ТД"], ["WiFi сеть для подключения", ["Пароль сети"], ["Время ожидания подключения"]]);
   // Режим работы: WIFI_AP - точка доступа, WIFI_STA - клиент, WIFI_AP_STA - ТД + Клиент
