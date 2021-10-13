@@ -1,4 +1,4 @@
-#define CRM_VER F("2021.09.14a")  // r1.2.3
+#define CRM_VER F("2021.10.13a")  // r1.2.4
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
@@ -32,6 +32,7 @@
 #define OUTPUT_TEXT 30
 #define OUTPUT_TABL 31
 #define OUTPUT_HR 32
+#define OUTPUT_LABEL 33
 
 #define CHART_L 43
 #define CHART_B 44
@@ -46,6 +47,6 @@
   Serial.print(__FILE__); \
   Serial.print(F(" | ")); \
   Serial.print(__LINE__); \
-  Serial.print(F(" | ")); \
+  Serial.print(F(" | M")); \
   Serial.println(ESP.getFreeHeap()); \
   Serial.flush();
