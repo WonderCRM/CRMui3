@@ -42,3 +42,5 @@ version					KEYWORD2
 wifiScan				KEYWORD2
 disableWiFiManagement		KEYWORD2
 useArduinoOta							KEYWORD2
+uint64ToStr		KEYWORD2
+strToChr				KEYWORD2
