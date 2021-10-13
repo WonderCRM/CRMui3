@@ -42,24 +42,20 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
     _debug = true;
   }
   SPLN(String(F("\nCRMui3 ver:")) + CRM_VER);
-  ui = uiFunction;
-  if (ui == NULL)
-  {
-	  SPLN(String(F("\nuiFunction not defined")));
-	  return;
+  if (uiFunction == NULL) {
+    SPLN(F("[ERROR] uiFunction not defined."));
+    return;
   }
+  ui = uiFunction;
   if (updateFunction != NULL) upd = updateFunction;
-  else _updateStatus = false;
   if (apiFunction != NULL) api = apiFunction;
-  else _apiStatus = false;
   _app_name = app_name;
   getID();
   cfgLoad();
   http();
   if (!_disableWiFiManagement) wifiStart();
   server.begin();
-  if (updateFunction)
-	  upd();
+  if (upd) upd();
   if (_useArduinoOta) {
     ArduinoOTA.setHostname(var(F("_as")).c_str());
     ArduinoOTA.begin();
@@ -76,7 +72,7 @@ void CRMui3::run() {
     _upTime++;
     if (_wifiMode > 1) dnsServer.processNextRequest();
     cfgAutoSave();
-    if (_sentingToWeb == true) {
+    if (_sendingToWeb == true) {
       webUpdate("uptime", upTime());
       webUpdate("wifi", String(WiFi.RSSI()));
       webUpdate("ram", String(ESP.getFreeHeap()), true);
@@ -92,11 +88,11 @@ void CRMui3::version (const String &ver) {
 
 
 String CRMui3::upTime() {
-  static bool upTimeInit = true;
+  static bool timeAdjustment = true;
   String b = String();
-  if (upTimeInit) {
+  if (timeAdjustment) {
     _upTime += millis() / 1000 - _upTime;
-    upTimeInit = false;
+    timeAdjustment = false;
   }
   if ((_upTime / 86400 % 365) != 0) {
     b += _upTime / 86400 % 365;
@@ -115,7 +111,7 @@ String CRMui3::upTime() {
 
 void CRMui3::getID() {
 #ifdef ESP32
-  _id = uint64ToString(ESP.getEfuseMac());
+  _id = uint64ToStr(ESP.getEfuseMac());
 #else
   _id = String(ESP.getChipId()) + String(ESP.getFlashChipId());
 #endif
@@ -138,13 +134,13 @@ void CRMui3::defaultWifi(uint8_t mode, const String &ap_ssid, const String &ap_p
 void CRMui3::http() {
   ws.onEvent([this](AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
     if (type == WS_EVT_CONNECT) {
-      _sentingToWeb = true;
+      _sendingToWeb = true;
       ws.cleanupClients();
       //client->ping();
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Connect"));
     } else if (type == WS_EVT_DISCONNECT) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Disconnect"));
-      if (ws.count() < 1) _sentingToWeb = false;
+      if (ws.count() < 1) _sendingToWeb = false;
     } else if (type == WS_EVT_ERROR) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Error"));
     }/* else if (type == WS_EVT_PONG) {
@@ -204,28 +200,24 @@ void CRMui3::http() {
     for (int i = 0; i < headers; i++) {
       AsyncWebParameter* p = request->getParam(i);
       String pname = p->name();
-	  if (pname.indexOf("BT_") != -1)
-	  {
-		  _btnui = pname.substring(3);
-		  if (btnCallbackFunc)
-			  btnCallbackFunc(_btnui.c_str());
-	  }
-      else if (pname == "wUPD") ws.textAll(String("{\"_t\":0}").c_str());
+      if (pname.indexOf("BT_") != -1) {
+        _btnui = pname.substring(3);
+        if (btnCallbackFunc) btnCallbackFunc(_btnui.c_str());
+      } else if (pname == "wUPD") ws.textAll(String("{\"_t\":0}").c_str());
       else {
-        DBGLN(pname + F(" = ") + p->value());
+        DBGLN("[VAR] " + pname + F(" = ") + p->value());
         if (pname.indexOf("CR_") != -1) {
           pname = pname.substring(3);
           var(pname, p->value(), false);
         } else var(pname, p->value());
         if (webConnCountStatus() > 1) ws.textAll(String("{\"_t\":2,\"d\":[[\"" + pname + "\",\"" + p->value() + "\"]]}").c_str());
-        if (upd)
-			upd();
+        if (upd) upd();
       }
     }
   });
 
 
-  if (_apiStatus) {
+  if (api) {
     server.on("/api", HTTP_GET, [this](AsyncWebServerRequest * request) {
       if (_AuthenticateStatus) {
         if (_apiKey == "") {
@@ -310,8 +302,7 @@ void CRMui3::http() {
         for (JsonPair kv : doc.as<JsonObject>()) {
           var(String(kv.key().c_str()), kv.value().as<String>());
         }
-        if (upd)
-			upd();
+        if (upd) upd();
         request->send(200, F("text/html"), F("Config file update."));
         Serial.println(String(F("Configuratoin from ")) + filename + F(" write to SPIFFS."));
       } else {
@@ -494,7 +485,7 @@ void CRMui3::setWebAuth(const String &login, const String &pass) {
 
 
 void CRMui3::setApiKey(const String &key) {
-  if (_apiStatus) _apiKey = key;
+  if (api) _apiKey = key;
 }
 
 
@@ -510,7 +501,7 @@ void CRMui3::apiResponse(const String &p, const String &v) {
 
 
 void CRMui3::webUpdate(const String &name, const String &value, bool n) {
-  if (_sentingToWeb) {
+  if (_sendingToWeb) {
     if (name == "") ws.textAll(String("{\"_t\":0}").c_str());
     else {
       static String b = String();
@@ -548,7 +539,7 @@ void CRMui3::espReboot() {
 }
 
 
-String CRMui3::uint64ToString(uint64_t v) {
+String CRMui3::uint64ToStr(uint64_t v) {
   String s = String();
   do {
     char c = v % 10;
@@ -561,13 +552,25 @@ String CRMui3::uint64ToString(uint64_t v) {
 }
 
 
+char* CRMui3::strToChr(String s) {
+  char* S = new char[s.length() + 1];
+  strcpy(S, s.c_str());
+  return S;
+}
+
+
 void CRMui3::espSleep(uint32_t sec, bool m) {
 #ifdef ESP32
-  uint32_t a = millis();
   if (sec) esp_sleep_enable_timer_wakeup(sec * 1000000ULL);
-  if (m) esp_deep_sleep_start();
-  else esp_light_sleep_start();
-  _upTime += (millis() - a) / 1000;
+  if (m) {
+    SPLN(F("[SLEEP] Deep sleep started..."));
+    esp_deep_sleep_start();
+  } else {
+    SPLN(F("[SLEEP] Light sleep started..."));
+    esp_light_sleep_start();
+  }
+  SPLN(F("[SLEEP] Light sleep ended."));
+  _upTime += sec;
   //esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_TIMER);
 #else
   Serial.println(F("The code for ESP8266 not written.\nPlease view exemple esp8266/LowPowerDemo/LowPowerDemo.ino"));
