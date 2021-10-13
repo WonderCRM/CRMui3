@@ -1,4 +1,3 @@
-//http://developer.alexanderklimov.ru/arduino/esp32/wifi.php
 #include "CRMui3.h"
 
 
@@ -6,15 +5,14 @@ void CRMui3::wifiEvent() {
   static bool firstConnection = false;
 
 #ifdef ESP32
-  // Core 1.0.6    v3.3.5-1-g85c43024c
-  WiFi.onEvent([this](system_event_id_t event, system_event_info_t info) {
+  WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
+	//Serial.println("[WiFi] Event: " + String(event) + ",  Reason: " + String(r));
+	  
+    // Core 1.0.6    v3.3.5-1-g85c43024c
     const int r = info.disconnected.reason;
 
     // Core 2.0.0   v4.4-dev-2313-gc69f0ec32
-    //WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
     //const int r = info.wifi_sta_disconnected.reason;
-
-    //Serial.println("[WiFi] Event: " + String(event) + ",  Reason: " + String(r));
 
     switch (event) {
       /*case 4: // STA_CONNECTED
@@ -40,7 +38,7 @@ void CRMui3::wifiEvent() {
         break;
 
       case 17: // SYSTEM_EVENT_AP_STADISCONNECTED
-        if (WiFi.softAPgetStationNum() < 1) _sentingToWeb = false;
+        if (WiFi.softAPgetStationNum() < 1) _sendingToWeb = false;
         break;
 
       default:
@@ -80,7 +78,7 @@ void CRMui3::wifiEvent() {
 
   //wifi evt: 6
   APDisconnected = WiFi.onSoftAPModeStationDisconnected([this](WiFiEventSoftAPModeStationDisconnected event) {
-    if (WiFi.softAPgetStationNum() < 1) _sentingToWeb = false;
+    if (WiFi.softAPgetStationNum() < 1) _sendingToWeb = false;
   });
 #endif
 }
@@ -110,7 +108,7 @@ void CRMui3::wifiStart() {
     WiFi.mode(WIFI_AP_STA);
     wifiSTA();
   }
-  //if (_wifiMode == 2) WiFi.scanNetworks(true);
+  if (_wifiMode == 2) WiFi.scanNetworks(true);
   _connectingTimer = millis();
 }
 
