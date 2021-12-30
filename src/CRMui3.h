@@ -115,7 +115,7 @@ class CRMui3 {
     void license(const String &lic, const String &e = "", const String &t = "", const String &h = "");
     void version (const String &ver);
     String uint64ToStr(uint64_t);
-    char* strToChr(String);
+    //char* strToChr(String);
 
     void setWebAuth(const String &login, const String &pass = "");
     void setApiKey(const String &key);
@@ -161,7 +161,7 @@ class CRMui3 {
     void wifiSTA();
     void wifiAP();
     void wifiStart();
-    uint8_t _wifiMode = 2;
+    uint8_t _wifiMode = 1;
     uint32_t _connectingTimer = 0;
     uint32_t _waitTimeForConnection = 0;
 
