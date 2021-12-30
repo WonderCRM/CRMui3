@@ -1,7 +1,7 @@
 #ifndef defines_h
 #define defines_h
 
-#define CRM_VER F("2021.09.14a")  // r1.2.3
+#define CRM_VER F("2021.12.30a")  // r1.2.5
 
 #define AUTO_SAVE_TIME_INTERVAL 30000
 
