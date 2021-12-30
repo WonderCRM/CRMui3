@@ -35,7 +35,7 @@ void setup() {
   //crm.begin("Project-28", interface, NULL, NULL, 115200);
   crm.begin("DEMO Project", interface, update, api, 115200);
 
-  // Авторизация в веб интерфейсе
+  // Авторизация в веб интерфейсе.
   // Параметры со * обязательны.
   // crm.setWebAuth("[*Имя пользователя]", "[Пароль]");
   //crm.setWebAuth("admin", "admin");
@@ -70,8 +70,6 @@ void setup() {
 
   // Конвертирование uint64_t в String
   // crm.uint64ToStr(uint64_t);
-  // Конвертирование String в cost Char*
-  // crm.strToChr(String);
   //
   // Только для ESP32
   //
