@@ -6,12 +6,12 @@ void CRMui3::wifiEvent() {
 
 #ifdef ESP32
   WiFi.onEvent([this](WiFiEvent_t event, WiFiEventInfo_t info) {
-	//Serial.println("[WiFi] Event: " + String(event) + ",  Reason: " + String(r));
-	  
+    //Serial.println("[WiFi] Event: " + String(event) + ",  Reason: " + String(r));
+
     // Core 1.0.6    v3.3.5-1-g85c43024c
     const int r = info.disconnected.reason;
 
-    // Core 2.0.0   v4.4-dev-2313-gc69f0ec32
+    // Core 2.0.0+   v4.4-dev-2313-gc69f0ec32
     //const int r = info.wifi_sta_disconnected.reason;
 
     switch (event) {
@@ -37,9 +37,8 @@ void CRMui3::wifiEvent() {
         }
         break;
 
-      case 17: // SYSTEM_EVENT_AP_STADISCONNECTED
-        if (WiFi.softAPgetStationNum() < 1) _sendingToWeb = false;
-        break;
+      /*case 17: // SYSTEM_EVENT_AP_STADISCONNECTED
+        break;*/
 
       default:
         break;
@@ -49,7 +48,7 @@ void CRMui3::wifiEvent() {
 #else
 
   // ESP8266
-  static WiFiEventHandler Disconnected, GotIP, APDisconnected;
+  static WiFiEventHandler Disconnected, GotIP;//, APDisconnected;
 
   //wifi evt: 0
   /*Connected = WiFi.onStationModeConnected([this](WiFiEventStationModeConnected event) {
@@ -77,9 +76,8 @@ void CRMui3::wifiEvent() {
   });
 
   //wifi evt: 6
-  APDisconnected = WiFi.onSoftAPModeStationDisconnected([this](WiFiEventSoftAPModeStationDisconnected event) {
-    if (WiFi.softAPgetStationNum() < 1) _sendingToWeb = false;
-  });
+  /*APDisconnected = WiFi.onSoftAPModeStationDisconnected([this](WiFiEventSoftAPModeStationDisconnected event) {
+  });*/
 #endif
 }
 
