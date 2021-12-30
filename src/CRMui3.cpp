@@ -38,6 +38,7 @@ void CRMui3::useArduinoOta() {
 void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)(), void (*apiFunction)(String), uint32_t baud) {
   if (baud > 0) {
     Serial.begin(baud);
+    Serial.setTimeout(100);
     Serial.flush();
     _debug = true;
   }
@@ -52,8 +53,10 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
   _app_name = app_name;
   getID();
   cfgLoad();
+  if (_disableWiFiManagement)
+    WiFi.mode(WIFI_STA);
+  else wifiStart();
   http();
-  if (!_disableWiFiManagement) wifiStart();
   server.begin();
   if (upd) upd();
   if (_useArduinoOta) {
@@ -66,13 +69,15 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
 
 
 void CRMui3::run() {
-  ArduinoOTA.handle();
+  if (_useArduinoOta) ArduinoOTA.handle();
   if (millis() - _runTimer >= 1000) {
     _runTimer = millis();
     _upTime++;
     if (_wifiMode > 1) dnsServer.processNextRequest();
     cfgAutoSave();
-    if (_sendingToWeb == true) {
+    if (_sendingToWeb) {
+      _sendingToWeb = webConnCountStatus();
+      if (WiFi.getMode() == 2 && !WiFi.softAPgetStationNum()) _sendingToWeb = false;
       webUpdate("uptime", upTime());
       webUpdate("wifi", String(WiFi.RSSI()));
       webUpdate("ram", String(ESP.getFreeHeap()), true);
@@ -143,6 +148,7 @@ void CRMui3::http() {
       if (ws.count() < 1) _sendingToWeb = false;
     } else if (type == WS_EVT_ERROR) {
       DBGLN(String(F("[WS] ID ")) + String(client->id()) + F(" Error"));
+      if (ws.count() < 1) _sendingToWeb = false;
     }/* else if (type == WS_EVT_PONG) {
       Serial.printf("[WebSocket] ID %u. Pong %u: %s\n", client->id(), len, (len) ? (char*)data : "");
     } else if (type == WS_EVT_DATA) {
@@ -519,7 +525,7 @@ void CRMui3::webUpdate(const String &name, const String &value, bool n) {
 
 
 void CRMui3::webNotif(const String &type, const String &text, long tout, bool x) {
-  if (webConnCountStatus()) {
+  if (_sendingToWeb) {
     ws.textAll(String("{\"_t\":3,\"d\":[\"" + type + "\",\"" + text + "\"," +
                       String(tout) + "," + String(x) + "]}").c_str());
   }
@@ -527,7 +533,7 @@ void CRMui3::webNotif(const String &type, const String &text, long tout, bool x)
 
 
 String CRMui3::getLang() {
-  return var(F("_L"));
+  return var("_L");
 }
 
 
@@ -552,11 +558,12 @@ String CRMui3::uint64ToStr(uint64_t v) {
 }
 
 
-char* CRMui3::strToChr(String s) {
+/*char* CRMui3::strToChr(String s) {
   char* S = new char[s.length() + 1];
   strcpy(S, s.c_str());
   return S;
-}
+  //delete[] S;
+}*/
 
 
 void CRMui3::espSleep(uint32_t sec, bool m) {
