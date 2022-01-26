@@ -62,10 +62,8 @@ void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFu
     ArduinoOTA.setHostname(var(F("_as")).c_str());
     ArduinoOTA.begin();
   }
-  if (_disableWiFiManagement) {
-    _wifiMode = WiFi.getMode();
-    if (_wifiMode > 1) dnsServer.start(53, "*", WiFi.softAPIP());
-  }
+  if (_disableWiFiManagement) _wifiMode = WiFi.getMode();
+  if (_wifiMode > 1) dnsServer.start(53, "*", WiFi.softAPIP());
   _start = false;
 }
 
