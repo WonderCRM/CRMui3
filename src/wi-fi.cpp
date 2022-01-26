@@ -134,7 +134,7 @@ String CRMui3::wifiScan() {
   } else if (n == -2) {
     WiFi.scanNetworks(true);
     return F("{\"s\":-2}");
-  }
+  } else return F("{\"s\":0}");
 }
 
 /*----------- ERROR CODE -----------
