@@ -1,0 +1,46 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+CRMui3				KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+DBGF					KEYWORD2
+DBG						KEYWORD2
+DBGLN					KEYWORD2
+SPLN						KEYWORD2
+SP							KEYWORD2
+TRACE					KEYWORD2
+begin						KEYWORD2
+run							KEYWORD2
+var							KEYWORD2
+upTime					KEYWORD2
+espReboot			KEYWORD2
+page						KEYWORD2
+input						KEYWORD2
+range						KEYWORD2
+select						KEYWORD2
+output					KEYWORD2
+card						KEYWORD2
+chart						KEYWORD2
+gauge					KEYWORD2
+wifiForm				KEYWORD2
+btnSwStatus		KEYWORD2
+btnCallback			KEYWORD2
+webUpdate			KEYWORD2
+webNotif				KEYWORD2
+apiResponse		KEYWORD2
+cfgDelete				KEYWORD2
+getLang				KEYWORD2
+webConnCountStatus		KEYWORD2
+espSleep				KEYWORD2
+setWebAuth		KEYWORD2
+setApiKey			KEYWORD2
+license					KEYWORD2
+version					KEYWORD2
+wifiScan				KEYWORD2
+disableWiFiManagement		KEYWORD2
+useArduinoOta							KEYWORD2
+uint64ToStr		KEYWORD2
+strToChr				KEYWORD2
