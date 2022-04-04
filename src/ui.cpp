@@ -3,6 +3,37 @@
 
 /*
   typedef struct {
+  uint8_t type;
+  const String &id;
+  const String &label;
+  String defaultValue;
+    {
+      {"label", "value"},
+      ...
+      до 50-ти
+    }
+  } Select_С;
+*/
+void CRMui3::select(Select_C item) {
+  if (var(item.id) == F("null") and item.type != INPUT_SELECT_PIECE_UP) var(item.id, item.defaultValue);
+  if (_start) return;
+  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
+  _buf += F("{\"o\":[");
+  for (uint8_t i = 0; i < 50; i++) {
+    if (item.options[i][0] != "") {
+      if (!_buf.endsWith(",") && !_buf.endsWith("[")) _buf += ",";
+      _buf += String() + F("[\"") + item.options[i][0] + F("\",\"") + item.options[i][1] + F("\"]");
+    } else break;
+  }
+  _buf += String() + F("],\"id\":\"") + item.id + F("\",");
+  _buf += String() + F("\"t\":") + String(item.type) + ",";
+  if(item.type == INPUT_SELECT_PIECE_UP) 
+    _buf += String() + F("\"w\":") + item.defaultValue + ",";
+  _buf += String() + F("\"l\":\"") + item.label + F("\"}]");
+}
+
+/*
+  typedef struct {
   const String &id;
   const String &label;
   String defaultValue;
@@ -51,6 +82,8 @@ void CRMui3::input(Input item) {
   if (item.s != "") _buf += String() + F(",\"s\":") + item.s;
   if (item.type == INPUT_BUTTON && item.defaultValue != "")
     _buf += String() + F(",\"p\":\"") + item.defaultValue + "\"";
+  if(item.type == INPUT_SELECT_PIECE_UP and item.type != INPUT_BUTTON) 
+    _buf += String() + F(",\"w\":") + item.defaultValue;
   _buf += String() + F(",\"l\":\"") + item.label + F("\"}]");
 }
 
@@ -98,6 +131,7 @@ void CRMui3::range(Range item) {
   _buf += String() + F("\"mn\":") + String(item.min) + ",";
   _buf += String() + F("\"mx\":") + String(item.max) + ",";
   _buf += String() + F("\"s\":") + String(item.step) + ",";
+  _buf += String() + F("\"w\":") + String(item.defaultValue) + ",";
   _buf += String() + F("\"u\":\"") + item.unit + F("\",");
   _buf += String() + F("\"l\":\"") + item.label + F("\"}]");
 }
