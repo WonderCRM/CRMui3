@@ -11,7 +11,7 @@
 * [**Канал этого проекта и других моих**](https://t.me/s/CRMdevelop)
 * [**Моя Телега**](https://t.me/User624)
 * [**Мой Mail**](mailto:crm.dev@bk.ru)
-* [**Донат (Благодарность)**](https://donatepay.ru/don/crmdev)
+* [**Донат (Благодарность)**](https://donatepay.ru/don/crmdev) | [**BTC: bc1qufwen50ffduw2ljgxtm937k4ah3l7lafa8pfp6**](https://donatepay.ru/don/crmdev)
 
 ## Железо
 Совместим с микроконтроллерами на ESP8266 (**ESP-12F лучше**) и ESP32.
