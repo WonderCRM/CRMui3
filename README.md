@@ -43,3 +43,8 @@
 *  Для ESP32
  
 ![PROJECT_PHOTO](https://github.com/WonderCRM/CRMui3/blob/main/IDE_32.png)
+
+## Отличие от оригинала
+Реализован метод который позволяет передавать данные веб интерфейсу не через конфиг и обратно
+Реализован подобие pwa приложения
+![PROJECT_PHOTO](https://webcase.com.ua/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2021/01/pwa-homescreen.jpg.webp)

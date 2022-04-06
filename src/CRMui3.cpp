@@ -1,4 +1,4 @@
-#define _gz
+// #define _gz
 
 #include "CRMui3.h"
 
@@ -19,6 +19,10 @@
 #include "web/fonticon.woff2.h"
 #include "web/favicon.ico.h"
 
+#include "web/icon-512x512.png.h"
+// #include "web/icon-384x384.png.h"
+// #include "web/icon-256x256.png.h"
+// #include "web/icon-192x192.png.h"
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -35,7 +39,8 @@ void CRMui3::useArduinoOta() {
 }
 
 
-void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)(), void (*apiFunction)(String), uint32_t baud) {
+void CRMui3::begin(const String &app_name, void (*uiFunction)(), void (*updateFunction)(), 
+  void (*apiFunction)(String), uint32_t baud) {
   if (baud > 0) {
     Serial.begin(baud);
     Serial.setTimeout(100);
@@ -83,6 +88,11 @@ void CRMui3::run() {
       webUpdate("ram", String(ESP.getFreeHeap()), true);
     }
     if (_espNeedReboot) espReboot();
+  }
+  if(_pieceUpdateState) {
+    for (size_t i = 0; i < _pieceUpdateNamber; i++) updatePieceCallback(_pieceUpdateList[i][0],_pieceUpdateList[i][1]);
+      _pieceUpdateState = false;
+      _pieceUpdateNamber = 0;
   }
 }
 
@@ -215,7 +225,15 @@ void CRMui3::http() {
         if (pname.indexOf("CR_") != -1) {
           pname = pname.substring(3);
           var(pname, p->value(), false);
-        } else var(pname, p->value());
+        } else if(pname.indexOf("UR_") != -1){
+          _pieceUpdateList[_pieceUpdateNamber][0] = pname.substring(3);
+          _pieceUpdateList[_pieceUpdateNamber][1] = p->value();
+          if(_pieceUpdateNamber<5) _pieceUpdateNamber++; 
+          _pieceUpdateState = true;
+          if (webConnCountStatus() > 1) ws.textAll(String("{\"_t\":2,\"d\":[[\"" + pname + "\",\"" + p->value() + "\"]]}").c_str());
+          return;
+        }
+        else var(pname, p->value());
         if (webConnCountStatus() > 1) ws.textAll(String("{\"_t\":2,\"d\":[[\"" + pname + "\",\"" + p->value() + "\"]]}").c_str());
         if (upd) upd();
       }
@@ -457,6 +475,47 @@ void CRMui3::http() {
     request->send(response);
   });
 
+    server.on("/icon-512x512.png", HTTP_GET, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    AsyncWebServerResponse *response = request->beginResponse_P(200, F("image/png"), icon_512x512, icon_512x512_png_size);
+    response->addHeader(F("Content-Encoding"), F("gzip"));
+    request->send(response);
+  });
+
+  server.on("/icon-384x384.png", HTTP_GET, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    AsyncWebServerResponse *response = request->beginResponse_P(200, F("image/png"), icon_512x512, icon_512x512_png_size);
+    response->addHeader(F("Content-Encoding"), F("gzip"));
+    request->send(response);
+  });
+
+  server.on("/icon-256x256.png", HTTP_GET, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    AsyncWebServerResponse *response = request->beginResponse_P(200, F("image/png"), icon_512x512, icon_512x512_png_size);
+    response->addHeader(F("Content-Encoding"), F("gzip"));
+    request->send(response);
+  });
+
+  server.on("/icon-192x192.png", HTTP_GET, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    AsyncWebServerResponse *response = request->beginResponse_P(200, F("image/png"), icon_512x512, icon_512x512_png_size);
+    response->addHeader(F("Content-Encoding"), F("gzip"));
+    request->send(response);
+  });
+
+  server.on("/manifest.webmanifest", HTTP_GET, [this](AsyncWebServerRequest * request) {
+    if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
+      return request->requestAuthentication();
+    
+    String _tj = "{\"start_url\":\"/\",\"scope\":\"/\",\"background_color\":\"#1a5ca9\",\"theme_color\":\"#1a5ca9\",\"short_name\":\"";
+    _tj += _app_name;
+    _tj += "\", \"description\":\"коментарии\",\"display\":\"standalone\",\"related_applications\":[{\"platform\":\"webapp\"},{\"platform\":\"web\"}],\"name\":\"relayx4\",\"icons\":[{\"src\":\"/icon-192x192.png\",\"type\":\"image/png\",\"sizes\":\"192x192\"},{\"src\":\"/icon-256x256.png\",\"type\":\"image/png\",\"sizes\":\"256x256\"},{\"src\":\"/icon-384x384.png\",\"type\":\"image/png\",\"sizes\":\"384x384\"},{\"src\":\"/icon-512x512.png\",\"type\":\"image/png\",\"sizes\":\"512x512\"}]}";
+    request->send(200, F("application/json"), _tj);  
+  });
 
   server.on("/logout", HTTP_GET, [this](AsyncWebServerRequest * request) {
     if (_AuthenticateStatus && !request->authenticate(_WebAuthLogin.c_str(), _WebAuthPass.c_str()))
@@ -470,6 +529,7 @@ void CRMui3::http() {
     request->redirect("/");
   });
 }
+
 
 
 void CRMui3::license(const String &lic, const String &e, const String &t, const String &h) {
@@ -506,7 +566,7 @@ void CRMui3::apiResponse(const String &p, const String &v) {
 }
 
 
-void CRMui3::webUpdate(const String &name, const String &value, bool n) {
+void CRMui3::webUpdate(const String & name, const String & value, bool n) {
   if (_sendingToWeb) {
     if (name == "") ws.textAll(String("{\"_t\":0}").c_str());
     else {
@@ -516,8 +576,9 @@ void CRMui3::webUpdate(const String &name, const String &value, bool n) {
       if (n) {
         b[b.length() - 1] = ']';
         b += "}";
-        ws.textAll(b.c_str());
+        String _b = b;
         b = String();
+        ws.textAll(_b.c_str());
       }
     }
   }

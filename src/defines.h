@@ -40,6 +40,22 @@
 #define CHART_L 43
 #define CHART_B 44
 
+//updates piece call void
+#define INPUT_CHECKBOX_PIECE_UP 50
+
+#define INPUT_PASSWORD_PIECE_UP 53
+#define INPUT_TEXT_PIECE_UP 54
+#define INPUT_COLOR_PIECE_UP 55
+#define INPUT_DATE_PIECE_UP 56
+#define INPUT_DATETIME_PIECE_UP 57
+#define INPUT_TIME_PIECE_UP 58
+#define INPUT_NUMBER_PIECE_UP 59
+#define INPUT_RANGE_PIECE_UP 60
+
+#define INPUT_SELECT_PIECE_UP 61
+#define INPUT_EMAIL_PIECE_UP 62
+
+
 
 #define DBG if (_debug) Serial.print
 #define DBGLN if (_debug) Serial.println

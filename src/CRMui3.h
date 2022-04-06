@@ -20,6 +20,14 @@
 
 
 typedef struct {
+  uint8_t type;
+  const String &id;
+  const String &label;
+  String defaultValue;
+  String options[50][2];
+} Select_C; 
+
+typedef struct {
   const String &id;
   const String &label;
   String defaultValue;
@@ -97,6 +105,7 @@ class CRMui3 {
     typedef void (*uiCallback) ();
     typedef void (*updateCallback) ();
     typedef void (*apiCallback) (String);
+    typedef void (*pieceUpdateCallback) (String,String);
 
   public:
     CRMui3(): btnCallbackFunc(0) {}
@@ -121,6 +130,7 @@ class CRMui3 {
     void setApiKey(const String &key);
     void page(const String &pageName);
     void select(Select);
+    void select(Select_C);
     void input(Input);
     void output(Output);
     void range(Range);
@@ -138,6 +148,9 @@ class CRMui3 {
     void webUpdate(const String &name = "", const String &value = "", bool n = false);
     void webNotif(const String &type, const String &text, long tout = 5, bool x = true);
     void apiResponse(const String &p, const String &v);
+    void updatePiece(void (*updatePieceFunction)(String,String) = NULL){
+      updatePieceCallback = updatePieceFunction;
+    }
 
     String var(const String &name);
     void var(const String &name, const String &value, bool save = true);
@@ -153,6 +166,7 @@ class CRMui3 {
     updateCallback upd;
     apiCallback api;
     buttonCallbackEvent btnCallbackFunc;
+    pieceUpdateCallback updatePieceCallback;
 
     bool _disableWiFiManagement = false;
     bool _useArduinoOta = false;
@@ -168,6 +182,11 @@ class CRMui3 {
     String _app_name = String();
     String _project_version = String();
     String _buf = String();
+
+    String _pieceUpdateList[5][2];
+    bool _pieceUpdateState = false;
+    int _pieceUpdateNamber = 0;
+
     bool _start = true;
     uint32_t _upTime = 0;
     uint32_t _runTimer = 0;
