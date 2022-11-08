@@ -1,32 +1,50 @@
 #include "CRMui3.h"
 
 
+
+void CRMui3::selOpt(SelOpt item) {
+  if (_start) return;
+  if (!_bufOpt) _bufOpt = new String;
+  String b = String();
+  if ((*_bufOpt).endsWith("]")) b += F(",");
+  b += F("[\"");
+  b += item.label;
+  b += F("\",\"");
+  b += item.value;
+  b += F("\"]");
+  *_bufOpt += b;
+}
+
+
 /*
   typedef struct {
   const String &id;
   const String &label;
-  String defaultValue;
-    {
-      {"label", "value"},
-      ...
-      до 50-ти
-    }
+  const String &defaultValue;
+  bool reload;
   } Select;
 */
 void CRMui3::select(Select item) {
   if (var(item.id) == F("null")) var(item.id, item.defaultValue);
   if (_start) return;
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += F("{\"o\":[");
-  for (uint8_t i = 0; i < 50; i++) {
-    if (item.options[i][0] != "") {
-      if (!_buf.endsWith(",") && !_buf.endsWith("[")) _buf += ",";
-      _buf += String() + F("[\"") + item.options[i][0] + F("\",\"") + item.options[i][1] + F("\"]");
-    } else break;
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"o\":[");
+  if (_bufOpt) {
+    b += *_bufOpt;
+    delete _bufOpt;
+    _bufOpt = nullptr;
   }
-  _buf += String() + F("],\"id\":\"") + item.id + F("\",");
-  _buf += String() + F("\"t\":") + String(INPUT_SELECT) + ",";
-  _buf += String() + F("\"l\":\"") + item.label + F("\"}]");
+  b += F("],\"id\":\"");
+  b += item.id;
+  b += F("\",\"t\":");
+  b += INPUT_SELECT;
+  b += F(",\"r\":");
+  b += item.reload;
+  b += F(",\"l\":\"");
+  b += item.label;
+  b += F("\"}");
+  *_bufUI += b;
 }
 
 
@@ -44,14 +62,31 @@ void CRMui3::input(Input item) {
   if (item.type != INPUT_BUTTON && item.type != INPUT_WIFI && var(item.id) == F("null"))
     var(item.id, item.defaultValue);
   if (_start) return;
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += String() + F("{\"t\":") + String(item.type);
-  _buf += String() + F(",\"id\":\"") + item.id + "\"";
-  if (item.d != "") _buf += String() + F(",\"d\":\"") + item.d + "\"";
-  if (item.s != "") _buf += String() + F(",\"s\":") + item.s;
-  if (item.type == INPUT_BUTTON && item.defaultValue != "")
-    _buf += String() + F(",\"p\":\"") + item.defaultValue + "\"";
-  _buf += String() + F(",\"l\":\"") + item.label + F("\"}]");
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += item.type;
+  b += F(",\"id\":\"");
+  b += item.id;
+  b += F("\"");
+  if (item.d != "") {
+    b += F(",\"d\":\"");
+    b += item.d;
+    b += F("\"");
+  }
+  if (item.s != "") {
+    b += F(",\"s\":");
+    b += item.s;
+  }
+  if (item.type == INPUT_BUTTON && item.defaultValue != "") {
+    b += F(",\"p\":\"");
+    b += item.defaultValue;
+    b += F("\"");
+  }
+  b += F(",\"l\":\"");
+  b += item.label;
+  b += F("\"}");
+  *_bufUI += b;
 }
 
 
@@ -67,14 +102,29 @@ void CRMui3::input(Input item) {
 */
 void CRMui3::output(Output item) {
   if (_start) return;
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += String() + F("{\"t\":") + String(item.type);
-  _buf += String() + F(",\"id\":\"") + item.id + "\"";
-  _buf += String() + F(",\"l\":\"") + item.label + "\"";
-  _buf += String() + F(",\"d\":\"") + item.def + "\"";
-  if (item.c != "") _buf += String() + F(",\"c\":\"") + item.c + "\"";
-  if (item.s != "") _buf += String() + F(",\"s\":\"") + item.s + "\"";
-  _buf += F("}]");
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += item.type;
+  b += F(",\"id\":\"");
+  b += item.id;
+  b += F("\",\"l\":\"");
+  b += item.label;
+  b += F("\",\"d\":\"");
+  b += item.def;
+  b += F("\"");
+  if (item.c != "") {
+    b += F(",\"c\":\"");
+    b += item.c;
+    b += F("\"");
+  }
+  if (item.s != "") {
+    b += F(",\"s\":\"");
+    b += item.s;
+    b += F("\"");
+  }
+  b += F("}");
+  *_bufUI += b;
 }
 
 
@@ -92,14 +142,24 @@ void CRMui3::output(Output item) {
 void CRMui3::range(Range item) {
   if (var(item.id) == F("null")) var(item.id, item.defaultValue);
   if (_start) return;
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += String() + F("{\"t\":") + String(INPUT_RANGE) + ",";
-  _buf += String() + F("\"id\":\"") + item.id + F("\",");
-  _buf += String() + F("\"mn\":") + String(item.min) + ",";
-  _buf += String() + F("\"mx\":") + String(item.max) + ",";
-  _buf += String() + F("\"s\":") + String(item.step) + ",";
-  _buf += String() + F("\"u\":\"") + item.unit + F("\",");
-  _buf += String() + F("\"l\":\"") + item.label + F("\"}]");
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += INPUT_RANGE;
+  b += F(",\"id\":\"");
+  b += item.id;
+  b += F("\",\"mn\":");
+  b += item.min;
+  b += F(",\"mx\":");
+  b += item.max;
+  b += F(",\"s\":");
+  b += item.step;
+  b += F(",\"u\":\"");
+  b += item.unit;
+  b += F("\",\"l\":\"");
+  b += item.label;
+  b += F("\"}");
+  *_bufUI += b;
 }
 
 
@@ -118,25 +178,35 @@ void CRMui3::card(Card item) {
   if (item.type == CARD_CHECKBOX && var(item.id) == F("null"))
     var(item.id, item.defaultValue);
   if (_start) return;
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += String() + F("{\"t\":") + String(item.type);
-  _buf += String() + F(",\"id\":\"") + item.id + "\"";
-  _buf += String() + F(",\"l\":\"") + item.label + "\"";
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += item.type;
+  b += F(",\"id\":\"");
+  b += item.id;
+  b += F("\",\"l\":\"");
+  b += item.label;
+  b += F("\"");
   if (item.type != CARD_CHECKBOX && item.defaultValue != "") {
-    _buf += F(",\"v\":");
-    if (item.type < CARD_CHART_L) _buf += "\"";
-    _buf += item.defaultValue;
-    if (item.type < CARD_CHART_L) _buf += "\"";
+    b += F(",\"v\":");
+    if (item.type < CARD_CHART_L) b += F("\"");
+    b += item.defaultValue;
+    if (item.type < CARD_CHART_L) b += F("\"");
   }
   if (item.icon != "") {
-    _buf += F(",\"i\":");
-    if (item.type < CARD_CHART_L) _buf += "\"";
-    _buf += item.icon;
-    if (item.type < CARD_CHART_L) _buf += "\"";
+    b += F(",\"i\":");
+    if (item.type < CARD_CHART_L) b += F("\"");
+    b += item.icon;
+    if (item.type < CARD_CHART_L) b += F("\"");
   }
-  if (item.color != "") _buf += String() + F(",\"c\":\"") + item.color + "\"";
-  if (item.newGroup) _buf += String() + F(",\"n\":1");
-  _buf += F("}]");
+  if (item.color != "") {
+    b += F(",\"c\":\"");
+    b += item.color;
+    b += F("\"");
+  }
+  if (item.newGroup) b += F(",\"n\":1");
+  b += F("}");
+  *_bufUI += b;
 }
 
 
@@ -152,19 +222,37 @@ void CRMui3::card(Card item) {
   } Chart;
 */
 void CRMui3::chart(Chart item) {
-  if (_start) {
-    _useChart = true;
-    return;
+  _useChart = true;
+  if (_start) return;
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += item.type;
+  b += F(",\"id\":\"");
+  b += item.id;
+  b += F("\",\"l\":\"");
+  b += item.label;
+  b += F("\"");
+  if (item.labelLine != "") {
+    b += F(",\"a\":");
+    b += item.labelLine;
   }
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += String() + F("{\"t\":") + String(item.type);
-  _buf += String() + F(",\"id\":\"") + item.id + "\"";
-  _buf += String() + F(",\"l\":\"") + item.label + "\"";
-  if (item.labelLine != "") _buf += String() + F(",\"a\":") + item.labelLine;
-  if (item.valueLine != "") _buf += String() + F(",\"b\":") + item.valueLine;
-  if (item.color != "") _buf += String() + F(",\"c\":\"") + item.color + "\"";
-  if (item.height != "") _buf += String() + F(",\"h\":\"") + item.height + "\"";
-  _buf += F("}]");
+  if (item.valueLine != "") {
+    b += F(",\"b\":");
+    b += item.valueLine;
+  }
+  if (item.color != "") {
+    b += F(",\"c\":\"");
+    b += item.color;
+    b += "\"";
+  }
+  if (item.height != "") {
+    b += F(",\"h\":\"");
+    b += item.height;
+    b += "\"";
+  }
+  b += F("}");
+  *_bufUI += b;
 }
 
 
@@ -182,28 +270,45 @@ void CRMui3::chart(Chart item) {
   } Gauge;
 */
 void CRMui3::gauge(Gauge item) {
-  if (_start) {
-    _useGauge = true;
-    return;
-  }
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += F("{\"c\":[");
+  _useGauge = true;
+  if (_start) return;
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"c\":[");
   for (uint8_t i = 0; i < 6; i++) {
     if (item.color[i][0] != "") {
-      if (!_buf.endsWith(",") && !_buf.endsWith("[")) _buf += ",";
-      _buf += String() + F("[\"") + item.color[i][0] + F("\",\"") +
-              item.color[i][1] + F("\",\"") +
-              item.color[i][2] + F("\"]");
+      if (!b.endsWith(",") && !b.endsWith("[")) b += ",";
+      b += F("[\"");
+      b += item.color[i][0];
+      b += F("\",\"");
+      b += item.color[i][1];
+      b += F("\",\"");
+      b += item.color[i][2];
+      b += F("\"]");
     } else break;
   }
-  _buf += String() + F("],\"id\":\"") + item.id;
-  _buf += String() + F("\",\"t\":") + String(item.type);
-  _buf += String() + F(",\"n\":") + String(item.min);
-  _buf += String() + F(",\"x\":") + String(item.max);
-  _buf += String() + F(",\"d\":") + String(item.def);
-  if (item.unit != "") _buf += String() + F(",\"u\":\"") + String(item.unit) + "\"";
-  if (item.group) _buf += String() + F(",\"g\":1");
-  _buf += String() + F(",\"l\":\"") + item.label + F("\"}]");
+  b += F("],\"id\":\"");
+  b += item.id;
+  b += F("\",\"t\":");
+  b += item.type;
+  b += F(",\"n\":");
+  b += item.minimum;
+  b += F(",\"x\":");
+  b += item.maximum;
+  b += F(",\"d\":");
+  b += item.def;
+  if (item.unit != "") {
+    b += F(",\"u\":\"");
+    b += item.unit;
+    b += F("\"");
+  }
+  if (item.group) {
+    b += F(",\"g\":1");
+  }
+  b += F(",\"l\":\"");
+  b += item.label;
+  b += F("\"}");
+  *_bufUI += b;
 }
 
 
@@ -212,13 +317,33 @@ void CRMui3::wifiForm(uint8_t mode, const String &ap_ssid, const String &ap_pass
     defaultWifi(mode, ap_ssid, ap_pass, ssid, pass, wtc);
     return;
   }
-  if (_buf.endsWith("]")) _buf[_buf.length() - 1] = ',';
-  _buf += String() + F("{\"t\":") + String(INPUT_WIFI) + F("}]");
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += INPUT_WIFI;
+  b += F("}");
+  *_bufUI += b;
 }
 
 
 void CRMui3::page(const String &pageName) {
   if (_start) return;
-  if (!_buf.endsWith(",") && !_buf.endsWith("[")) _buf += ",";
-  _buf += String() + F("[{\"m\":\"") + pageName + F("\"}]");
+  String b = String();
+  if ((*_bufUI).endsWith("}")) b += "]";
+  if (!(*_bufUI).endsWith("[")) b += F(",");
+  b += F("[{\"m\":\"");
+  b += pageName;
+  b += F("\"}");
+  *_bufUI += b;
+}
+
+
+void CRMui3::group(uint8_t type) {
+  if (_start) return;
+  String b = String();
+  if ((*_bufUI) != "") b += F(",");
+  b += F("{\"t\":");
+  b += type;
+  b += F("}");
+  *_bufUI += b;
 }

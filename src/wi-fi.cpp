@@ -1,3 +1,4 @@
+//http://developer.alexanderklimov.ru/arduino/esp32/wifi.php
 #include "CRMui3.h"
 
 
@@ -19,21 +20,36 @@ void CRMui3::wifiEvent() {
         break;*/
 
       case 5: // STA_DISCONNECTED
-        if (r == 2 || r == 7 || r == 15) WiFi.reconnect();
+        if (r == 2 || r == 4 || r == 7 || r == 8 || r == 15) WiFi.reconnect();
         else if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) && _waitTimeForConnection != 0 &&
                  millis() - _connectingTimer >= _waitTimeForConnection) {
           WiFi.disconnect();
-          SPLN(String() + F("[WiFi] Connecting to WiFi failed. Time is over. Code ") + String(r));
+          {
+            String m = String();
+            m += F("[WiFi] Connecting to WiFi failed. Time is over. Code ");
+            m += r;
+            SPLN(m);
+          }
         }
         break;
 
       case 7: // STA_GOT_IP
-        SPLN(String() + F("[WiFi] Connecting to \"") + WiFi.SSID() + F("\" is done. ") +
-             F("(IP: ") + WiFi.localIP().toString() + F(")"));
-        if (!firstConnection && r != 200 && _wifiMode == 1) {
+        {
+          String m = String();
+          m += F("[WiFi] Connecting to \"");
+          m += WiFi.SSID();
+          m += F("\" is done. ");
+          m += F("(IP: ");
+          m += WiFi.localIP().toString();
+          m += F(")");
+          SPLN(m);
+        }
+        if (!firstConnection && r != 200) {
           firstConnection = true;
-          WiFi.mode(WIFI_STA);
-          SPLN(F("[WiFi] AP mode disable."));
+          if (_wifiMode == 1) {
+            WiFi.mode(WIFI_STA);
+            SPLN(F("[WiFi] AP mode disable"));
+          }
         }
         break;
 
@@ -60,24 +76,40 @@ void CRMui3::wifiEvent() {
     if (!firstConnection && (_wifiMode == 1 || _wifiMode == 3) && _waitTimeForConnection != 0 &&
         millis() - _connectingTimer >= _waitTimeForConnection) {
       WiFi.disconnect();
-      SPLN(String(F("[WiFi] Connecting to WiFi failed. Time is over. Code ")) + String(event.reason));
+      {
+        String m = String();
+        m += F("[WiFi] Connecting to WiFi failed. Time is over. Code ");
+        m += event.reason;
+        SPLN(m);
+      }
     }
   });
 
   //wifi evt: 3
   GotIP = WiFi.onStationModeGotIP([this](WiFiEventStationModeGotIP event) {
-    firstConnection = true;
-    SPLN(String(F("[WiFi] Connecting to \"")) + WiFi.SSID() + F("\" is done. ") +
-         F("IP: ") + WiFi.localIP().toString());  //event.ip.toString().c_str()   event.ssid.c_str()
-    if (_wifiMode == 1) {
-      WiFi.mode(WIFI_STA);
-      SPLN(F("[WiFi] AP mode disable."));
+    {
+      String m = String();
+      m += F("[WiFi] Connecting to \"");
+      m += WiFi.SSID();
+      m += F("\" is done. ");
+      m += F("IP: ");
+      m += WiFi.localIP().toString();
+      //event.ip.toString().c_str()   event.ssid.c_str()
+      SPLN(m);
+    }
+    if (!firstConnection) {
+      firstConnection = true;
+      if (_wifiMode == 1) {
+        WiFi.mode(WIFI_STA);
+        SPLN(F("[WiFi] AP mode disable"));
+      }
     }
   });
 
   //wifi evt: 6
   /*APDisconnected = WiFi.onSoftAPModeStationDisconnected([this](WiFiEventSoftAPModeStationDisconnected event) {
-  });*/
+    });*/
+
 #endif
 }
 
@@ -89,8 +121,13 @@ void CRMui3::wifiSTA() {
 
 void CRMui3::wifiAP() {
   WiFi.softAP(var(F("_as")).c_str(), var(F("_ap")).c_str());
-  SPLN(String(F("[WiFi] AP name: ")) + var(F("_as")) +
-       F("\t(IP: ") + WiFi.softAPIP().toString() + F(")"));
+  String m = String();
+  m += F("[WiFi] AP name: ");
+  m += var(F("_as"));
+  m += F("\t(IP: ");
+  m += WiFi.softAPIP().toString();
+  m += F(")");
+  SPLN(m);
 }
 
 
@@ -114,17 +151,22 @@ void CRMui3::wifiStart() {
 String CRMui3::wifiScan() {
   int n = WiFi.scanComplete();
   if (n > 0) {
-    String s = "{\"s\":";
-    s += String(n) + ",\"n\":[";
+    String s(F("{\"s\":"));
+    s += n;
+    s += F(",\"n\":[");
     for (int i = 0; i < n; ++i) {
-      if (i)s += ",";
-      s += "[\"";
-      s += WiFi.SSID(i) + "\",";
-      s += String(WiFi.channel(i)) + ",";
-      s += String(WiFi.RSSI(i)) + ",";
-      s += String(WiFi.encryptionType(i)) + "]";
+      if (i)s += F(",");
+      s += F("[\"");
+      s += WiFi.SSID(i);
+      s += F("\",");
+      s += WiFi.channel(i);
+      s += F(",");
+      s += WiFi.RSSI(i);
+      s += F(",");
+      s += WiFi.encryptionType(i);
+      s += F("]");
     }
-    s += "]}";
+    s += F("]}");
     WiFi.scanNetworks(true);
     return s;
   } else if (n == 0) {

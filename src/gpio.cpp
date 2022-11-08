@@ -2,19 +2,20 @@
 
 
 bool CRMui3::btnSwStatus() {
-  return _btnui != String();
+  return _bufBtnui;
 }
 
 
 void CRMui3::btnCallback(const String &name, buttonCallback response) {
-  if (_btnui == name) {
-    _btnui = String();
+  if (_bufBtnui && (*_bufBtnui) == name) {
+    delete _bufBtnui;
+    _bufBtnui = nullptr;
     response();
   }
 }
 
 
-void CRMui3::btnCallback(int pin, buttonCallback response, uint8_t lvl) {
+void CRMui3::btnCallback(uint8_t pin, buttonCallback response, uint8_t lvl) {
   if (digitalRead(pin) == lvl) {
     static uint32_t t = 0;
     uint32_t m = millis();
